@@ -1,1 +1,5 @@
+INSTALL (for git)
+
+mkdir app/code/community/Cammino
+git submodule add git@github.com:mferracioli/magento-shipping.git app/code/community/Cammino/Shipping
 cp Cammino_Shipping.xml app/etc/modules/
