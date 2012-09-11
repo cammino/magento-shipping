@@ -51,7 +51,11 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 	}
 	
 	private function shippingFreeRules($destAddress, $subtotal, $result) {
-		return false;
+		// TODO: verify free shipping rules
+		if($subtotal >= 300) {
+			$this->addFreeShipping($result);
+			return true;
+		}
 	}
 	
 	private function addFreeShipping($result) {
