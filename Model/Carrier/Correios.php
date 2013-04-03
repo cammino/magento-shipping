@@ -36,7 +36,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 			
 				$shippingPrice = floatval($amountObj["valor"]);
 				$shippingCode = $services[$i];
-				$shippingDays = $services[$i] == "sedex" ? $this->shippingDays(2) : $this->shippingDays(8);
+				$shippingDays = $services[$i] == "sedex" ? $this->shippingDays(3) : $this->shippingDays(10);
 				$shippingTitle = $this->getMethodTitle($services[$i]);
 			
 				$this->addRateResult($result, $shippingPrice, $shippingCode, $shippingDays, $shippingTitle);
