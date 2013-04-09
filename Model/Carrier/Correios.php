@@ -29,6 +29,8 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 		
 		$services = explode(",", $this->getConfigdata("services"));
 		$destAddress = $this->getAddressByPostcode($destPostcode);
+
+		//$this->shippingFreeRules($destAddress, $subtotal, $result);
 		
 		if (!$this->shippingFreeRules($destAddress, $subtotal, $result)) {		
 			for($i = 0; $i < count($services); $i++) {
@@ -38,8 +40,13 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 				$shippingCode = $services[$i];
 				$shippingDays = $services[$i] == "sedex" ? $this->shippingDays(3) : $this->shippingDays(10);
 				$shippingTitle = $this->getMethodTitle($services[$i]);
-			
-				$this->addRateResult($result, $shippingPrice, $shippingCode, $shippingDays, $shippingTitle);
+
+				if ($shippingTitle == "PAC") {
+					$this->addFreePACShipping($result);
+				} else {
+					$this->addRateResult($result, $shippingPrice, $shippingCode, $shippingDays, $shippingTitle);
+				}
+	
 			}
 		}
 		
@@ -55,6 +62,8 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 		if($subtotal >= 300) {
 			$this->addFreeShipping($result);
 			return true;
+		} else {
+			//$this->addFreeShipping($result);
 		}
 	}
 	
@@ -65,6 +74,19 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 		$method->setCarrierTitle("Frete Grátis");
 		$method->setMethod("freeshipping_freeshipping");
 		$method->setMethodTitle("Frete Grátis");
+		$method->setPrice(0);
+		$method->setCost(0);
+
+		$result->append($method);
+	}
+
+	private function addFreePACShipping($result) {
+		$method = Mage::getModel("shipping/rate_result_method");
+
+		$method->setCarrier("correios");
+		$method->setCarrierTitle("PAC");
+		$method->setMethod("correios_freepac");
+		$method->setMethodTitle("PAC<br/><span style=\"font-weight: normal;\">Frete Grátis - Entrega em 10 dias</span>");
 		$method->setPrice(0);
 		$method->setCost(0);
 
