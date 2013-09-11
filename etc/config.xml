@@ -51,6 +51,7 @@
 				<model>cammino_shipping_model_carrier_correios</model>
 				<name>correios</name>
 				<title>Correios</title>
+				<freepac>0</freepac>
 				<sort_order>0</sort_order>
 			</correios>
 		</carriers>

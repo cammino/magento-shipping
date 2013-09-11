@@ -30,6 +30,8 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 		$services = explode(",", $this->getConfigdata("services"));
 		$destAddress = $this->getAddressByPostcode($destPostcode);
 
+		$freepac = intval($this->getConfigdata("freepac")) == 1 ? true : false;
+
 		//$this->shippingFreeRules($destAddress, $subtotal, $result);
 		
 		if (!$this->shippingFreeRules($destAddress, $subtotal, $result)) {		
@@ -41,7 +43,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 				$shippingDays = $services[$i] == "sedex" ? $this->shippingDays(3) : $this->shippingDays(10);
 				$shippingTitle = $this->getMethodTitle($services[$i]);
 
-				if ($shippingTitle == "PAC") {
+				if (($shippingTitle == "PAC") && ($freepac)) {
 					$this->addFreePACShipping($result);
 				} else {
 					$this->addRateResult($result, $shippingPrice, $shippingCode, $shippingDays, $shippingTitle);
