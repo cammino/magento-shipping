@@ -28,11 +28,13 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 		$subtotal = $totals["subtotal"]["value"];
 		
 		$services = explode(",", $this->getConfigdata("services"));
-		$destAddress = $this->getAddressByPostcode($destPostcode);
+	//	$destAddress = $this->getAddressByPostcode($destPostcode);
+		$destAddress = null;
 
 		$freepac = intval($this->getConfigdata("freepac")) == 1 ? true : false;
+	//	$freeminamount = floatval($this->getConfigdata("freeminamount"));
 
-		//$this->shippingFreeRules($destAddress, $subtotal, $result);
+	//	$this->shippingFreeRules($destAddress, $subtotal, $result);
 		
 		if (!$this->shippingFreeRules($destAddress, $subtotal, $result)) {		
 			for($i = 0; $i < count($services); $i++) {
@@ -40,7 +42,8 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 			
 				$shippingPrice = floatval($amountObj["valor"]);
 				$shippingCode = $services[$i];
-				$shippingDays = $services[$i] == "sedex" ? $this->shippingDays(3) : $this->shippingDays(10);
+			//	$shippingDays = $services[$i] == "sedex" ? $this->shippingDays(3) : $this->shippingDays(10);
+				$shippingDays = $this->shippingDays($amountObj["prazo"]);
 				$shippingTitle = $this->getMethodTitle($services[$i]);
 
 				if (($shippingTitle == "PAC") && ($freepac)) {
@@ -60,13 +63,12 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 	}
 	
 	private function shippingFreeRules($destAddress, $subtotal, $result) {
-		// TODO: verify free shipping rules
-		if($subtotal >= 300) {
-			//$this->addFreeShipping($result);
-			//return true;
-		} else {
-			//$this->addFreeShipping($result);
-		}
+		// if($subtotal >= 300) {
+		// 	$this->addFreeShipping($result);
+		// 	return true;
+		// } else {
+		// 	$this->addFreeShipping($result);
+		// }
 	}
 	
 	private function addFreeShipping($result) {
@@ -158,9 +160,56 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 	}
 	
 	public function getShippingAmount($originPostcode, $destPostcode, $weight, $shippingService) {
-		$url = "http://webservice.kinghost.net/web_frete.php?formato=javascript&auth=".$this->_kinghostAuth."&tipo=".$shippingService."&cep_origem=".$originPostcode."&cep_destino=".$destPostcode."&peso=".$weight;
-		$json = $this->getJson($url);		
-		return $json;
+
+	// $url = "http://webservice.kinghost.net/web_frete.php?formato=javascript&auth=".$this->_kinghostAuth."&tipo=".$shippingService."&cep_origem=".$originPostcode."&cep_destino=".$destPostcode."&peso=".$weight;
+	// $json = $this->getJson($url);		
+	// return $json;
+
+		$shippingServiceCode = "";
+
+		if ($shippingService == "sedex") {
+			$shippingServiceCode = "40010";
+		} else if ($shippingService == "pac") {
+			$shippingServiceCode = "41106";
+		}
+
+		$formatedWeight = number_format(($weight/1000), 2, ',', '');
+
+		$url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx";
+		$url .= "?nCdEmpresa=";
+		$url .= "&sDsSenha=";
+		$url .= "&nCdServico=" . $shippingServiceCode;
+		$url .= "&sCepOrigem=" . $originPostcode;
+		$url .= "&sCepDestino=" . $destPostcode;
+		$url .= "&nVlPeso=" . $formatedWeight;
+		$url .= "&nCdFormato=1";
+		$url .= "&nVlComprimento=25";
+		$url .= "&nVlAltura=15";
+		$url .= "&nVlLargura=25";
+		$url .= "&sCdMaoPropria=n";
+		$url .= "&nVlValorDeclarado=0";
+		$url .= "&sCdAvisoRecebimento=n";
+		$url .= "&nVlDiametro=0";
+		$url .= "&StrRetorno=xml";
+		$url .= "&nIndicaCalculo=3";
+
+		var_dump($url);
+
+		$result = $this->getXml($url);
+
+		return $result;
+	}
+
+	public function getXml($url) {
+		$content = file_get_contents($url);
+		$xml = simplexml_load_string($content);
+
+		$result = array(
+			'prazo' => intval($xml->cServico->PrazoEntrega),
+			'valor' => floatval(str_replace(",", ".", str_replace(".", "", $xml->cServico->Valor)))
+		);
+
+		return $result;
 	}
 	
 	public function getJson($url) {
