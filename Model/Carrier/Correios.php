@@ -28,13 +28,16 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 		$subtotal = $totals["subtotal"]["value"];
 		
 		$services = explode(",", $this->getConfigdata("services"));
-	//	$destAddress = $this->getAddressByPostcode($destPostcode);
+		// $destAddress = $this->getAddressByPostcode($destPostcode);
 		$destAddress = null;
 
-		$freepac = intval($this->getConfigdata("freepac")) == 1 ? true : false;
-	//	$freeminamount = floatval($this->getConfigdata("freeminamount"));
+		// $freepac = intval($this->getConfigdata("freepac")) == 1 ? true : false;
+		// $freesedex = intval($this->getConfigdata("freesedex")) == 1 ? true : false;
 
-	//	$this->shippingFreeRules($destAddress, $subtotal, $result);
+		// $minpacamount = floatval($this->getConfigdata("minpacamount"));
+		// $minsedexamount = floatval($this->getConfigdata("minsedexamount"));
+
+		// $this->shippingFreeRules($destAddress, $subtotal, $result);
 		
 		if (!$this->shippingFreeRules($destAddress, $subtotal, $result)) {		
 			for($i = 0; $i < count($services); $i++) {
@@ -46,11 +49,11 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 				$shippingDays = $this->shippingDays($amountObj["prazo"]);
 				$shippingTitle = $this->getMethodTitle($services[$i]);
 
-				if (($shippingTitle == "PAC") && ($freepac)) {
-					$this->addFreePACShipping($result);
-				} else {
+				// if (($shippingTitle == "PAC") && ($freepac)) {
+				// 	$this->addFreePACShipping($result);
+				// } else {
 					$this->addRateResult($result, $shippingPrice, $shippingCode, $shippingDays, $shippingTitle);
-				}
+				// }
 	
 			}
 		}
@@ -63,12 +66,10 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 	}
 	
 	private function shippingFreeRules($destAddress, $subtotal, $result) {
-		// if($subtotal >= 300) {
-		// 	$this->addFreeShipping($result);
-		// 	return true;
-		// } else {
-		// 	$this->addFreeShipping($result);
-		// }
+		if($subtotal >= 300) {
+			$this->addFreeShipping($result);
+			return true;
+		}
 	}
 	
 	private function addFreeShipping($result) {
