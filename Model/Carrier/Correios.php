@@ -2,149 +2,77 @@
 class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrier_Abstract implements Mage_Shipping_Model_Carrier_Interface {
 
 	protected $_code = "correios";
-	private $_errors = array();
-	private $_resultsCount = 0;
-	private $_currencyRate = 1;
-	private $_kinghostAuth = "b14a7b8059d9c055954c92674ce60032";
-	private $_area1 = array();
-	private $_area2 = array();
-	private $_area3 = array();
 	
 	public function collectRates(Mage_Shipping_Model_Rate_Request $request) {		
+		
 		$result = Mage::getModel("shipping/rate_result");
 		$error = Mage::getModel("shipping/rate_result_error");
-		
+
 		$originPostcode = Mage::getStoreConfig("shipping/origin/postcode", $this->getStore());
 		$originPostcode = str_replace('-', '', trim($originPostcode));
+	
 		$destPostcode = $request->getDestPostcode();
 		$destPostcode = str_replace('-', '', trim($destPostcode));
-	//	$weightUnits = $this->getConfigData("weight_units");
-	//	$weight = $request->getPackageWeight() * $weightUnits;
-		$weight = $request->getPackageWeight();
-
-		if (floatval($weight) <= 0) $weight = 100;
 		
-		$totals = Mage::helper('checkout/cart')->getQuote()->getTotals();
-		$subtotal = $totals["subtotal"]["value"];
-		
-		$services = explode(",", $this->getConfigdata("services"));
-		// $destAddress = $this->getAddressByPostcode($destPostcode);
-		$destAddress = null;
+		if ($request->getAllItems()) {
+            foreach ($request->getAllItems() as $item) {
+            	
+            	if ($item->getParentItem()) continue;
+                
+                $_product = $item->getProduct();
+                $_productId = $_product->getId();
+                $_product  = Mage::getModel('catalog/product')->load($_productId);
+                $_weight   = $_product->getShippingWeight() * $item->getQty();
+                $_packageX = $_product->getShippingX();
+                $_packageY = $_product->getShippingY();
+                $_packageZ = $_product->getShippingZ();
+                $_productPrice = $item->getPrice();
 
-		// $freepac = intval($this->getConfigdata("freepac")) == 1 ? true : false;
-		// $freesedex = intval($this->getConfigdata("freesedex")) == 1 ? true : false;
+                if ( $_weight && $_packageX && $_packageY && $_packageZ ) {
+	                $_services = null;
+	                $_services = $this->getShippingAmount($originPostcode, $destPostcode, $_weight, $_packageX, $_packageY, $_packageZ);
+                }
+            }
+        }
 
-		// $minpacamount = floatval($this->getConfigdata("minpacamount"));
-		// $minsedexamount = floatval($this->getConfigdata("minsedexamount"));
+        usort($_services, array('Cammino_Shipping_Model_Carrier_Correios','sortRates'));
 
-		// $this->shippingFreeRules($destAddress, $subtotal, $result);
-		
-		if (!$this->shippingFreeRules($destAddress, $subtotal, $result)) {		
-			for($i = 0; $i < count($services); $i++) {
-				$amountObj = $this->getShippingAmount($originPostcode, $destPostcode, $weight, $services[$i]);
-			
-				$shippingPrice = floatval($amountObj["valor"]);
-				$shippingCode = $services[$i];
-			//	$shippingDays = $services[$i] == "sedex" ? $this->shippingDays(3) : $this->shippingDays(10);
-				$shippingDays = $this->shippingDays($amountObj["prazo"]);
-				$shippingTitle = $this->getMethodTitle($services[$i]);
+        if ( count($_services) > 0 ) {
 
-				// if (($shippingTitle == "PAC") && ($freepac)) {
-				// 	$this->addFreePACShipping($result);
-				// } else {
-					$this->addRateResult($result, $shippingPrice, $shippingCode, $shippingDays, $shippingTitle);
-				// }
-	
-			}
-		}
-		
-		if(($this->_resultsCount == 0) && (count($this->_errors) > 0)) {
-			$this->addErrors($result);
-		}
+            Mage::getSingleton("core/session")->setCarrierShippingDays($bestShipping["days"]);
+
+            if ( $request->getFreeShipping() === true ) {
+               $this->addRateResult($result, 0, "freeshipping", $literalShippingDays, "Frete Grátis");
+            } else {
+            	foreach ($_services as $service) {
+            		$this->addRateResult($result, $service["price"], $service["code"], $this->shippingDays($service["days"]), $this->shippingTitle($service["code"]));
+            	}
+            }
+        } else {
+            $this->addError($result, "Desculpe, no momento não estamos atuando com entregas para sua região.");
+        }
 
 		return $result;
 	}
 	
-	private function shippingFreeRules($destAddress, $subtotal, $result) {
-		if($subtotal >= 300) {
-			$this->addFreeShipping($result);
-			return true;
-		}
-	}
-	
-	private function addFreeShipping($result) {
-		$method = Mage::getModel("shipping/rate_result_method");
-
-		$method->setCarrier("freeshipping");
-		$method->setCarrierTitle("Frete Grátis");
-		$method->setMethod("freeshipping_freeshipping");
-		$method->setMethodTitle("Frete Grátis");
-		$method->setPrice(0);
-		$method->setCost(0);
-
-		$result->append($method);
-	}
-
-	private function addFreePACShipping($result) {
-		$method = Mage::getModel("shipping/rate_result_method");
-
-		$method->setCarrier("correios");
-		$method->setCarrierTitle("PAC");
-		$method->setMethod("correios_freepac");
-		$method->setMethodTitle("PAC<br/><span style=\"font-weight: normal;\">Frete Grátis - Entrega em 10 dias</span>");
-		$method->setPrice(0);
-		$method->setCost(0);
-
-		$result->append($method);
-	}
-	
 	private function addRateResult($result, $shippingPrice, $shippingCode, $shippingDays, $shippingTitle) {
-		if ($shippingPrice == 0) {
-			$errorMessage = "Não foi possível calcular o frete para este endereço.";
-		}
-
-		if(strlen($errorMessage) <= 0) {
-			$method = Mage::getModel("shipping/rate_result_method");
+        $method = Mage::getModel("shipping/rate_result_method");
+        $method->setCarrier("correios");
+        $method->setCarrierTitle($this->getConfigData("title"));
+        $method->setMethod("correios_$shippingCode");
+        $method->setMethodTitle("$shippingTitle ($shippingDays) ");
+        $method->setPrice($shippingPrice);
+        $method->setCost($shippingPrice);
+        $result->append($method);
+    }
 	
-			$method->setCarrier("correios");
-			$method->setCarrierTitle($this->getConfigData("title"));
-			$method->setMethod("correios_$shippingCode");
-			$method->setMethodTitle("$shippingTitle<br/><span style=\"font-weight: normal;\">Entrega em $shippingDays</span> ");
-			$method->setPrice($shippingPrice);
-			$method->setCost($shippingPrice);
-	
-			$result->append($method);
-
-			$this->_resultsCount += 1;
-		} else {
-			array_push($this->_errors, $errorMessage);
-		}
-	}
-	
-	private function addErrors($result) {
-		$error = Mage::getModel ('shipping/rate_result_error');
-		$allErrorMessages = "";
-		
-		foreach($this->_errors as $errorMessage) {
-			$allErrorMessages .= "$errorMessage";
-			break;
-		}
-		
-		$error->setCarrier('correios');
-		$error->setCarrierTitle($this->getConfigData('title'));
-		$error->setErrorMessage("$allErrorMessages");
-
-		$result->append($error);
-	}
-	
-	private function getMethodTitle($code) {
-		$methods = array();
-		
-		$methods["pac"] = "PAC";
-		$methods["sedex"] = "SEDEX";
-		
-		return $methods[$code];
-	}
+	private function addError($result, $errorMessage) {
+        $error = Mage::getModel ("shipping/rate_result_error");        
+        $error->setCarrier("correios");
+        $error->setCarrierTitle($this->getConfigData("title"));
+        $error->setErrorMessage("$errorMessage");
+        $result->append($error);
+    }
 	
 	private function shippingDays($days) {
 		if(intval($days) == 1) {
@@ -153,90 +81,116 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 			return "$days dias úteis";
 		}
 	}
-	
-	public function getAddressByPostcode($postcode) {
-		$url = "http://webservice.kinghost.net/web_cep.php?formato=javascript&auth=".$this->_kinghostAuth."&cep=".$postcode;
-		$json = $this->getJson($url);
-		return $json;
-	}
-	
-	public function getShippingAmount($originPostcode, $destPostcode, $weight, $shippingService) {
 
-	// $url = "http://webservice.kinghost.net/web_frete.php?formato=javascript&auth=".$this->_kinghostAuth."&tipo=".$shippingService."&cep_origem=".$originPostcode."&cep_destino=".$destPostcode."&peso=".$weight;
-	// $json = $this->getJson($url);		
-	// return $json;
+	private function shippingTitle($code)
+	{
+		switch ($code) {
+			case '41106': // sem contrato
+			case '41211': // com contrato
+			case '41068': // com contrato
+				return 'PAC';
+				break;
+			
+			case '40045': // sem contrato
+			case '40126': // com contrato
+				return 'SEDEX a cobrar';
+				break;
 
-		$shippingServiceCode = "";
+			case '81019': // com contrato
+			case '81868': // com contrato (grupo 1)
+			case '81833': // com contrato (grupo 2)
+			case '81850': // com contrato (grupo 3)
+				return 'e-SEDEX';
+				break;
 
-		if ($shippingService == "sedex") {
-			$shippingServiceCode = "40010";
-		} else if ($shippingService == "pac") {
-			$shippingServiceCode = "41106";
+			case '81027': // com contrato
+				return 'e-SEDEX prioritário';
+				break;
+					
+			case '81035': // com contrato
+				return 'e-SEDEX express';
+				break;
+
+			case '40010': // sem contrato
+			case '40096': // com contrato
+			case '40436': // com contrato
+			case '40444': // com contrato
+			case '40568': // com contrato
+			case '40606': // com contrato
+				return 'SEDEX';
+				break;
+
+			case '40215':
+				return 'SEDEX 10';
+				break;
+
+			case '40290':
+				return 'SEDEX Hoje';	
+				break;
+
+			default:
+				# code...
+				break;
 		}
-
-		$formatedWeight = number_format(($weight/1000), 2, ',', '');
-
-		$url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx";
-		$url .= "?nCdEmpresa=";
-		$url .= "&sDsSenha=";
-		$url .= "&nCdServico=" . $shippingServiceCode;
-		$url .= "&sCepOrigem=" . $originPostcode;
-		$url .= "&sCepDestino=" . $destPostcode;
-		$url .= "&nVlPeso=" . $formatedWeight;
-		$url .= "&nCdFormato=1";
-		$url .= "&nVlComprimento=25";
-		$url .= "&nVlAltura=15";
-		$url .= "&nVlLargura=25";
-		$url .= "&sCdMaoPropria=n";
-		$url .= "&nVlValorDeclarado=0";
-		$url .= "&sCdAvisoRecebimento=n";
-		$url .= "&nVlDiametro=0";
-		$url .= "&StrRetorno=xml";
-		$url .= "&nIndicaCalculo=3";
-
-		$result = $this->getXml($url);
-
-		return $result;
 	}
+	
+	public function getShippingAmount($originPostcode, $destPostcode, $weight, $x, $y, $z) {
+
+        $formatedWeight = number_format($weight, 2, ',', '');
+        
+        // Configs
+        $_services = $this->getConfigData("services");
+        $_user = $this->getConfigData("user");
+        $_pass = $this->getConfigData("pass");
+        
+        $url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx";
+        $url .= "?nCdEmpresa=" . $_user;
+        $url .= "&sDsSenha=" . $_pass;
+        $url .= "&nCdServico=" . $_services;
+        $url .= "&sCepOrigem=" . $originPostcode;
+        $url .= "&sCepDestino=" . $destPostcode;
+        $url .= "&nVlPeso=" . $formatedWeight;
+        $url .= "&nCdFormato=1";
+        $url .= "&nVlComprimento=" . $x;
+        $url .= "&nVlAltura=" . $y;
+        $url .= "&nVlLargura=" . $z;
+        $url .= "&sCdMaoPropria=n";
+        $url .= "&nVlValorDeclarado=0";
+        $url .= "&sCdAvisoRecebimento=n";
+        $url .= "&nVlDiametro=0";
+        $url .= "&StrRetorno=xml";
+        $url .= "&nIndicaCalculo=3";
+
+        $result = $this->getXml($url);
+
+        return $result;
+    }
 
 	public function getXml($url) {
 		$content = file_get_contents($url);
-		$xml = simplexml_load_string($content);
+        $xml = simplexml_load_string($content);
+        $services = null;
 
-		$result = array(
-			'prazo' => intval($xml->cServico->PrazoEntrega),
-			'valor' => floatval(str_replace(",", ".", str_replace(".", "", $xml->cServico->Valor)))
-		);
+        foreach ($xml->cServico as $cServico) {
+        	$services[] = array (
+            	"code" => intval($cServico->Codigo),
+                "days" => intval($cServico->PrazoEntrega),
+                "price" => floatval(str_replace(",", ".", str_replace(".", "", $cServico->Valor)))
+            );
+        }
 
-		return $result;
+        if (is_array($services)) {
+        	return $services;
+        }
+
+        return null;
 	}
 	
-	public function getJson($url) {
-		$content = file_get_contents($url);
-		$content = str_replace("var resultado = ", "", $content);
-		$content = str_replace("var resultadoCEP = ", "", $content);
-		$content = str_replace("'", "\"", $content);
-		$content = str_replace("\t", "", $content);
-		$content = str_replace(" ", "", $content);
-		
-		$json = json_decode($content, true);
-		
-		foreach($json as $key => $value) {
-			$json[$key] = utf8_encode(urldecode($value));
-		}
-		
-		return $json;
-	}
+	private static function sortRates($a, $b) {
+        return $a["price"] - $b["price"];
+    }
 	
 	public function getAllowedMethods() {
 		return array("correios" => $this->getConfigData("name"));
 	}
-	
-	public function isTrackingAvailable() {
-		return false;
-	}
-
-	public function getTrackingInfo($trackingNumber) {
-		return false;
-    }
 }
