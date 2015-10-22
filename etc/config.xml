@@ -11,28 +11,6 @@
 				<class>Cammino_Shipping_Model</class>
 			</camminoshipping>
 		</models>
-		<resources>
-			<!--
-			<camminoshipping_setup>
-				<setup>
-					<module>Cammino_Shipping</module>
-				</setup>
-				<connection>
-					<use>core_setup</use>
-				</connection>
-			</camminoshipping_setup>
-			<camminoshipping_write>
-				<connection>
-					<use>core_write</use>
-				</connection>
-			</camminoshipping_write>
-			<camminoshipping_read>
-				<connection>
-					<use>core_read</use>
-				</connection>
-			</camminoshipping_read>
-			-->
-		</resources>
 		<sales>
 			<shipping>
 				<carriers>
