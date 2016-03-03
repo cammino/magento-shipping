@@ -141,6 +141,15 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 					$weight = $weight / 1000;
 				}
 
+				if ($x < 16)
+					$x = 16;
+
+				if ($y < 2)
+					$y = 2;
+
+				if ($z < 11)
+					$z = 11;
+
         $formatedWeight = number_format($weight, 2, ',', '');
         
         // Configs
@@ -177,6 +186,10 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         $services = null;
 
         foreach ($xml->cServico as $cServico) {
+
+        	if (strval($cServico->MsgErro) != "")
+        		continue;
+
         	$services[] = array (
             	"code" => intval($cServico->Codigo),
                 "days" => intval($cServico->PrazoEntrega),
