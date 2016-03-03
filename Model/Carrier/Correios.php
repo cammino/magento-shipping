@@ -136,6 +136,11 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 	
 	public function getShippingAmount($originPostcode, $destPostcode, $weight, $x, $y, $z) {
 
+				// Divide caso o usuario mande um número inteiro, para converter em gramas.
+				if (!is_float($weight)) {
+					$weight = $weight / 1000;
+				}
+
         $formatedWeight = number_format($weight, 2, ',', '');
         
         // Configs
