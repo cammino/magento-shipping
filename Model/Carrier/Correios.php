@@ -40,12 +40,16 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         if ( count($_services) > 0 ) {
 
             if ( $request->getFreeShipping() === true ) {
-               $this->addRateResult($result, 0, "freeshipping", '', "Frete Grátis");
-            } else {
+            	$_last = count($_services) - 1;
+            	$_services[$_last]["price"] = 0;
+            	$_services[$_last]["code"] = "00000";
+            }
+               //$this->addRateResult($result, 0, "freeshipping", '', "Frete Grátis");
+            // } else {
             	foreach ($_services as $service) {
             		$this->addRateResult($result, $service["price"], $service["code"], $this->shippingDays($service["days"]), $this->shippingTitle($service["code"]));
             	}
-            }
+            // }
         } else {
             $this->addError($result, "Desculpe, no momento não estamos atuando com entregas para sua região.");
         }
@@ -83,6 +87,9 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 	private function shippingTitle($code)
 	{
 		switch ($code) {
+			case '00000':
+				return "Grátis";
+				break;
 			case '41106': // sem contrato
 			case '41211': // com contrato
 			case '41068': // com contrato
