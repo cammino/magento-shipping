@@ -39,10 +39,8 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
         if ( count($_services) > 0 ) {
 
-            Mage::getSingleton("core/session")->setCarrierShippingDays($bestShipping["days"]);
-
             if ( $request->getFreeShipping() === true ) {
-               $this->addRateResult($result, 0, "freeshipping", $literalShippingDays, "Frete Grátis");
+               $this->addRateResult($result, 0, "freeshipping", '', "Frete Grátis");
             } else {
             	foreach ($_services as $service) {
             		$this->addRateResult($result, $service["price"], $service["code"], $this->shippingDays($service["days"]), $this->shippingTitle($service["code"]));
