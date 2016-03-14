@@ -206,8 +206,6 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         $url .= "&StrRetorno=xml";
         $url .= "&nIndicaCalculo=3";
 
-        var_dump($url);
-
         $result = $this->getXml($url);
 
         return $result;
