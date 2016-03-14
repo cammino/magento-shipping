@@ -55,6 +55,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 $_last = count($_services) - 1;
                 $_services[$_last]["price"] = 0;
                 //$_services[$_last]["code"] = "00000";
+                $_shippingTitlePrefix = "Frete Grátis - ";
             }
 
             foreach ($_services as $service) {
