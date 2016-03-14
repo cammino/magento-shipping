@@ -3,7 +3,7 @@
     <sections>
         <carriers>
             <groups>
-				<!-- Correios -->
+                <!-- Correios -->
                 <correios translate="label" module="shipping">
                     <label>Correios</label>
                     <frontend_type>text</frontend_type>
@@ -54,7 +54,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </services>
-
                         <sort_order translate="label">
                             <label>Sort order</label>
                             <frontend_type>text</frontend_type>
@@ -63,9 +62,45 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </sort_order>
+                        <defaultx translate="label">
+                            <label>Comprimento padrão</label>
+                            <comment>Informe o comprimento padrão de um único produto.</comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>8</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </defaultx>
+                        <defaulty translate="label">
+                            <label>Altura padrão</label>
+                            <comment>Informe a altura padrão de um único produto.</comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>9</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </defaulty>
+                        <defaultz translate="label">
+                            <label>Largura padrão</label>
+                            <comment>Informe o largura padrão de um único produto.</comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </defaultz>
+                        <defaultweight translate="label">
+                            <label>Peso padrão</label>
+                            <comment>Informe o peso padrão de um único produto.</comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>11</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </defaultweight>
                     </fields>
                 </correios>
-				<!-- /Correios -->
+                <!-- /Correios -->
             </groups>
         </carriers>
     </sections>

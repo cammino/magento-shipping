@@ -13,7 +13,17 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
     
         $destPostcode = $request->getDestPostcode();
         $destPostcode = str_replace('-', '', trim($destPostcode));
-        
+
+        $_weight = 0;
+        $_packageX = 0;
+        $_packageY = 0;
+        $_packageZ = 0;
+
+        $_defaultWeight = floatval($this->getConfigData("defaultweight"));
+        $_defaultX = floatval($this->getConfigData("defaultx"));
+        $_defaultY = floatval($this->getConfigData("defaulty"));
+        $_defaultZ = floatval($this->getConfigData("defaultz"));
+
         if ($request->getAllItems()) {
             foreach ($request->getAllItems() as $item) {
                 
@@ -22,18 +32,18 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 $_product = $item->getProduct();
                 $_productId = $_product->getId();
                 $_product  = Mage::getModel('catalog/product')->load($_productId);
-                $_weight   = $_product->getShippingWeight() * $item->getQty();
-                $_packageX = $_product->getShippingX();
-                $_packageY = $_product->getShippingY();
-                $_packageZ = $_product->getShippingZ();
-                $_productPrice = $item->getPrice();
 
-                if ( $_weight && $_packageX && $_packageY && $_packageZ ) {
-                    $_services = null;
-                    $_services = $this->getShippingAmount($originPostcode, $destPostcode, $_weight, $_packageX, $_packageY, $_packageZ);
-                }
+                $_weight += (floatval($_product->getShippingWeight()) > 0 ? floatval($_product->getShippingWeight()) : $_defaultWeight) * $item->getQty();
+                $_packageX += (floatval($_product->getShippingX()) > 0 ? floatval($_product->getShippingX()) : $_defaultX) * $item->getQty();
+                $_packageY += (floatval($_product->getShippingY()) > 0 ? floatval($_product->getShippingY()) : $_defaultY) * $item->getQty();
+                $_packageZ += (floatval($_product->getShippingZ()) > 0 ? floatval($_product->getShippingZ()) : $_defaultZ) * $item->getQty();
             }
         }
+
+	    if ( ($_weight > 0) && ($_packageX > 0) && ($_packageY > 0) && ($_packageZ > 0) ) {
+	        $_services = null;
+	        $_services = $this->getShippingAmount($originPostcode, $destPostcode, $_weight, $_packageX, $_packageY, $_packageZ);
+	    }
 
         usort($_services, array('Cammino_Shipping_Model_Carrier_Correios','sortRates'));
 
@@ -44,12 +54,11 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 $_services[$_last]["price"] = 0;
                 $_services[$_last]["code"] = "00000";
             }
-               //$this->addRateResult($result, 0, "freeshipping", '', "Frete Grátis");
-            // } else {
-                foreach ($_services as $service) {
-                    $this->addRateResult($result, $service["price"], $service["code"], $this->shippingDays($service["days"]), $this->shippingTitle($service["code"]));
-                }
-            // }
+
+            foreach ($_services as $service) {
+                $this->addRateResult($result, $service["price"], $service["code"], $this->shippingDays($service["days"]), $this->shippingTitle($service["code"]));
+            }
+
         } else {
             $this->addError($result, "Desculpe, no momento não estamos atuando com entregas para sua região.");
         }
@@ -134,26 +143,22 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 break;
 
             default:
-                # code...
                 break;
         }
     }
     
     public function getShippingAmount($originPostcode, $destPostcode, $weight, $x, $y, $z) {
 
-                // Divide caso o usuario mande um número inteiro, para converter em gramas.
-                if (!is_float($weight)) {
-                    $weight = $weight / 1000;
-                }
+        $weight = $weight / 1000;
 
-                if ($x < 16)
-                    $x = 16;
+        if ($x < 16)
+            $x = 16;
 
-                if ($y < 2)
-                    $y = 2;
+        if ($y < 2)
+            $y = 2;
 
-                if ($z < 11)
-                    $z = 11;
+        if ($z < 11)
+            $z = 11;
 
         $formatedWeight = number_format($weight, 2, ',', '');
         
