@@ -45,6 +45,8 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 	        $_services = $this->getShippingAmount($originPostcode, $destPostcode, $_weight, $_packageX, $_packageY, $_packageZ);
 	    }
 
+        $_shippingTitlePrefix = "";
+
         usort($_services, array('Cammino_Shipping_Model_Carrier_Correios','sortRates'));
 
         if ( count($_services) > 0 ) {
@@ -52,11 +54,11 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             if ( $request->getFreeShipping() === true ) {
                 $_last = count($_services) - 1;
                 $_services[$_last]["price"] = 0;
-                $_services[$_last]["code"] = "00000";
+                //$_services[$_last]["code"] = "00000";
             }
 
             foreach ($_services as $service) {
-                $this->addRateResult($result, $service["price"], $service["code"], $this->shippingDays($service["days"]), $this->shippingTitle($service["code"]));
+                $this->addRateResult($result, $service["price"], $service["code"], $this->shippingDays($service["days"]), $_shippingTitlePrefix.$this->shippingTitle($service["code"]));
             }
 
         } else {
