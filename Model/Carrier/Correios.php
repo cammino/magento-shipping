@@ -154,11 +154,32 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         if ($x < 16)
             $x = 16;
 
+        if ($x > 105)
+            $x = 105;
+
         if ($y < 2)
             $y = 2;
 
+        if ($y > 105)
+            $y = 105;
+
         if ($z < 11)
             $z = 11;
+
+        if ($z > 105)
+            $z = 105;
+
+        if (($x+$y+$z) > 200) {
+            $x = 66;
+            $y = 66;
+            $z = 66;
+        }
+
+        if ($weight == 0)
+            $weight = 0.3;
+
+        if ($weight > 30)
+            $weight = 30;
 
         $formatedWeight = number_format($weight, 2, ',', '');
         
@@ -184,6 +205,8 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         $url .= "&nVlDiametro=0";
         $url .= "&StrRetorno=xml";
         $url .= "&nIndicaCalculo=3";
+
+        var_dump($url);
 
         $result = $this->getXml($url);
 
