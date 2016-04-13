@@ -59,7 +59,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
             foreach ($_services as $service) {
 
-                if ($_services[$_last]["price"] == 0) {
+                if ($service["price"] == 0) {
                     $_shippingTitlePrefix = "Frete Grátis - ";
                 } else {
                     $_shippingTitlePrefix = "";
