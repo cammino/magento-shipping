@@ -47,9 +47,9 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
         $_shippingTitlePrefix = "";
 
-        usort($_services, array('Cammino_Shipping_Model_Carrier_Correios','sortRates'));
-
         if ( count($_services) > 0 ) {
+
+            usort($_services, array('Cammino_Shipping_Model_Carrier_Correios','sortRates'));
 
             if ( $request->getFreeShipping() === true ) {
                 //$_last = count($_services) - 1;
