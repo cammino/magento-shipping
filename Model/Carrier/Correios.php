@@ -52,8 +52,8 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         if ( count($_services) > 0 ) {
 
             if ( $request->getFreeShipping() === true ) {
-                $_last = count($_services) - 1;
-                $_services[$_last]["price"] = 0;
+                //$_last = count($_services) - 1;
+                $_services[0]["price"] = 0;
                 //$_services[$_last]["code"] = "00000";
             }
 
