@@ -65,6 +65,12 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                     $_shippingTitlePrefix = "";
                 }
 
+                $_shippingDaysExtra = floatval($this->getConfigData("shippingdaysextra"));
+
+                if ($_shippingDaysExtra > 0) {
+                    $service["days"] += $_shippingDaysExtra;    
+                }
+
                 $this->addRateResult($result, $service["price"], $service["code"], $this->shippingDays($service["days"]), $_shippingTitlePrefix.$this->shippingTitle($service["code"]));
             }
 

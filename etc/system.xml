@@ -100,7 +100,7 @@
                         </defaultweight>
                         <shippingdaysextra translate="label">
                             <label>Prazo Extra</label>
-                            <comment>bla bla bla</comment>
+                            <comment>Informe a quantidade de dias extras para ser acrescentado ao prazo de entrega.</comment>
                             <frontend_type>text</frontend_type>
                             <sort_order>12</sort_order>
                             <show_in_default>1</show_in_default>
