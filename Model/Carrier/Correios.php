@@ -24,6 +24,11 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         $_defaultY = floatval($this->getConfigData("defaulty"));
         $_defaultZ = floatval($this->getConfigData("defaultz"));
 
+        // Inicializa variaveis de envio imediato
+        $immediateShipment = (bool) $this->getConfigData("immediate_shipment_enable");    // Default false
+        $immediateShipmentDays = intval($this->getConfigData("immediate_shipment_days")); // Default: 0
+        $calcImmediateShipment = false; // Por default não calcula envio nao imediato
+
         if ($request->getAllItems()) {
             foreach ($request->getAllItems() as $item) {
                 
@@ -37,6 +42,18 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 $_packageX += (floatval($_product->getShippingX()) > 0 ? floatval($_product->getShippingX()) : $_defaultX) * $item->getQty();
                 $_packageY += (floatval($_product->getShippingY()) > 0 ? floatval($_product->getShippingY()) : $_defaultY) * $item->getQty();
                 $_packageZ += (floatval($_product->getShippingZ()) > 0 ? floatval($_product->getShippingZ()) : $_defaultZ) * $item->getQty();
+
+                //  Se o modulo de envio imediato estiver habilitado e ainda não tem nenhum produto com envio imediato
+                //  verifica se o produto tem envio imediato
+                if($immediateShipment && !$calcImmediateShipment){
+                    $pis = $_product->getData('immediate_shipping');
+
+                    // Se o produto NÃO (0) tem envio imediato, configura variavel para adicionar os dias extras
+                    if($pis == "0" && $pis != null){
+                        $calcImmediateShipment = true;
+                    }
+                }
+
             }
         }
 
@@ -69,6 +86,10 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
                 if ($_shippingDaysExtra > 0) {
                     $service["days"] += $_shippingDaysExtra;    
+                }
+
+                if($calcImmediateShipment){
+                    $service["days"] += $immediateShipmentDays;
                 }
 
                 $this->addRateResult($result, $service["price"], $service["code"], $this->shippingDays($service["days"]), $_shippingTitlePrefix.$this->shippingTitle($service["code"]));
