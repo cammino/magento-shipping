@@ -233,7 +233,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
         foreach ($xml->cServico as $cServico) {
 
-            if (strval($cServico->MsgErro) != "")
+            if ((strval($cServico->MsgErro) != "") && (intval($cServico->Erro) != 10))
                 continue;
 
             $services[] = array (
