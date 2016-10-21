@@ -86,7 +86,9 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
                 if (!$allow10014 && (strval($service["code"]) == "10014")) {
                     continue;
-                } else {
+                }
+
+                if (strval($service["code"]) == "10014") {
                     $service["price"] = $this->replace10014Price($service["price"], $_weight);
                 }
 
