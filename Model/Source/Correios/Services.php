@@ -29,14 +29,18 @@ class Cammino_Shipping_Model_Source_Correios_Services
 				array("value"=>"81019", "label"=>"e-SEDEX"),
 				array("value"=>"81868", "label"=>"e-SEDEX (Grupo 1)"),
 				array("value"=>"81833", "label"=>"e-SEDEX (Grupo 2)"),
-				array("value"=>"81850", "label"=>"e-SEDEX (Grupo 3)")
+				array("value"=>"81850", "label"=>"e-SEDEX (Grupo 3)"),
+
+				// Carta Registrada
+				array("value"=>"10014", "label"=>"Carta Registrada")
 	        );    		
     	} else {
     		$services = array(
 				array("value"=>"41106", "label"=>"PAC"),
 				array("value"=>"40010", "label"=>"SEDEX"),
 				array("value"=>"40215", "label"=>"SEDEX 10"),
-				array("value"=>"40290", "label"=>"SEDEX Hoje")
+				array("value"=>"40290", "label"=>"SEDEX Hoje"),
+				array("value"=>"10014", "label"=>"Carta Registrada")
 	        );
     	}
 

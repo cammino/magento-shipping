@@ -126,6 +126,15 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </immediate_shipment_days>
+                        <category10014 translate="label">
+                            <label>Categoria para Carta Registrada</label>
+                            <comment>Informe o id da categoria que tenha produtos que poderão ser enviados por Carta Registrada</comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>15</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </category10014>
                     </fields>
                 </correios>
                 <!-- /Correios -->

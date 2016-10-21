@@ -24,6 +24,9 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         $_defaultY = floatval($this->getConfigData("defaulty"));
         $_defaultZ = floatval($this->getConfigData("defaultz"));
 
+        $category10014 = intval($this->getConfigData("category10014"));
+        $allow10014 = true;
+
         // Inicializa variaveis de envio imediato
         $immediateShipment = (bool) $this->getConfigData("immediate_shipment_enable");    // Default false
         $immediateShipmentDays = intval($this->getConfigData("immediate_shipment_days")); // Default: 0
@@ -54,6 +57,11 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                     }
                 }
 
+                $_categories = $_product->getCategoryIds();
+
+                if (!in_array($category10014, $_categories)) {
+                    $allow10014 = ($allow10014 && false);
+                }
             }
         }
 
@@ -75,6 +83,12 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             }
 
             foreach ($_services as $service) {
+
+                if (!$allow10014 && (strval($service["code"]) == "10014")) {
+                    continue;
+                } else {
+                    $service["price"] = $this->replace10014Price($service["price"], $_weight);
+                }
 
                 if ($service["price"] == 0) {
                     $_shippingTitlePrefix = "Frete Grátis - ";
@@ -178,6 +192,10 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 return 'SEDEX Hoje';    
                 break;
 
+            case '10014':
+                return 'Carta Registrada';
+                break;
+
             default:
                 break;
         }
@@ -277,5 +295,29 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
     
     public function getAllowedMethods() {
         return array("correios" => $this->getConfigData("name"));
+    }
+
+    public function replace10014Price($price, $weight) {
+        if ($_weight <= 100) {
+            $price = 7.55;
+        } else if (($weight >= 101) && ($weight >= 150)) {
+            $price = 8.30;
+        } else if (($weight >= 151) && ($weight >= 200)) {
+            $price = 9.00;
+        } else if (($weight >= 201) && ($weight >= 250)) {
+            $price = 9.70;
+        } else if (($weight >= 251) && ($weight >= 300)) {
+            $price = 10.50;
+        } else if (($weight >= 301) && ($weight >= 350)) {
+            $price = 11.25;
+        } else if (($weight >= 351) && ($weight >= 400)) {
+            $price = 11.95;
+        } else if (($weight >= 401) && ($weight >= 450)) {
+            $price = 12.65;
+        } else if (($weight >= 451) && ($weight >= 500)) {
+            $price = 13.50;
+        }
+
+        return $price;
     }
 }
