@@ -41,7 +41,15 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 $_productId = $_product->getId();
                 $_product  = Mage::getModel('catalog/product')->load($_productId);
 
-                $_weight += (floatval($_product->getShippingWeight()) > 0 ? floatval($_product->getShippingWeight()) : $_defaultWeight) * $item->getQty();
+                if ($_product->getShippingWeight()) {
+                    $_weightProd = floatval($_product->getShippingWeight());
+                } else if($_product->getWeight()) {
+                    $_weightProd = floatval($_product->getWeight());
+                } else {
+                    $_weightProd = floatval($_defaultWeight);
+                }
+
+                $_weight += $_weightProd * $item->getQty();
                 $_packageX += (floatval($_product->getShippingX()) > 0 ? floatval($_product->getShippingX()) : $_defaultX) * $item->getQty();
                 $_packageY += (floatval($_product->getShippingY()) > 0 ? floatval($_product->getShippingY()) : $_defaultY) * $item->getQty();
                 $_packageZ += (floatval($_product->getShippingZ()) > 0 ? floatval($_product->getShippingZ()) : $_defaultZ) * $item->getQty();
@@ -92,6 +100,13 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                     $service["price"] = $this->replace10014Price($service["price"], $_weight);
                 }
 
+<<<<<<< HEAD
+=======
+                if ($service["price"] == null) {
+                    continue;
+                }
+
+>>>>>>> e930a6e... fix conflict
                 if ($service["price"] == 0) {
                     $_shippingTitlePrefix = "Frete Grátis - ";
                 } else {
@@ -300,24 +315,26 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
     }
 
     public function replace10014Price($price, $weight) {
-        if ($_weight <= 100) {
+        if ($weight <= 100) {
             $price = 7.55;
-        } else if (($weight >= 101) && ($weight >= 150)) {
+        } else if (($weight >= 101) && ($weight <= 150)) {
             $price = 8.30;
-        } else if (($weight >= 151) && ($weight >= 200)) {
+        } else if (($weight >= 151) && ($weight <= 200)) {
             $price = 9.00;
-        } else if (($weight >= 201) && ($weight >= 250)) {
+        } else if (($weight >= 201) && ($weight <= 250)) {
             $price = 9.70;
-        } else if (($weight >= 251) && ($weight >= 300)) {
+        } else if (($weight >= 251) && ($weight <= 300)) {
             $price = 10.50;
-        } else if (($weight >= 301) && ($weight >= 350)) {
+        } else if (($weight >= 301) && ($weight <= 350)) {
             $price = 11.25;
-        } else if (($weight >= 351) && ($weight >= 400)) {
+        } else if (($weight >= 351) && ($weight <= 400)) {
             $price = 11.95;
-        } else if (($weight >= 401) && ($weight >= 450)) {
+        } else if (($weight >= 401) && ($weight <= 450)) {
             $price = 12.65;
-        } else if (($weight >= 451) && ($weight >= 500)) {
+        } else if (($weight >= 451) && ($weight <= 500)) {
             $price = 13.50;
+        } else {
+            $price = null;
         }
 
         return $price;
