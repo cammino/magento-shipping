@@ -100,13 +100,10 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                     $service["price"] = $this->replace10014Price($service["price"], $_weight);
                 }
 
-<<<<<<< HEAD
-=======
                 if ($service["price"] == null) {
                     continue;
                 }
 
->>>>>>> e930a6e... fix conflict
                 if ($service["price"] == 0) {
                     $_shippingTitlePrefix = "Frete Grátis - ";
                 } else {
