@@ -84,11 +84,11 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
             usort($_services, array('Cammino_Shipping_Model_Carrier_Correios','sortRates'));
 
-            if ( $request->getFreeShipping() === true ) {
-                //$_last = count($_services) - 1;
-                $_services[0]["price"] = 0;
-                //$_services[$_last]["code"] = "00000";
-            }
+            // if ( $request->getFreeShipping() === true ) {
+            //     $_services[0]["price"] = 0;
+            // }
+
+            $freeShippingApplied = false;
 
             foreach ($_services as $service) {
 
@@ -104,7 +104,12 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                     continue;
                 }
 
-                if ($service["price"] == 0) {
+                if ((!$freeShippingApplied) && ($request->getFreeShipping() === true )) {
+                    $service["price"] = 0;
+                    $freeShippingApplied = true;
+                }
+
+                if (($service["price"] == 0) && ($request->getFreeShipping() === true )) {
                     $_shippingTitlePrefix = "Frete Grátis - ";
                 } else {
                     $_shippingTitlePrefix = "";
