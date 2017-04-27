@@ -6,6 +6,11 @@
 		</Cammino_Shipping>
 	</modules>
 	<global>
+		<helpers>
+			<camminoshipping>
+				<class>Cammino_Shipping_Helper</class>
+			</camminoshipping>
+		</helpers>
 		<models>
 			<camminoshipping>
 				<class>Cammino_Shipping_Model</class>

@@ -264,12 +264,17 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             );
         }
 
+        $custom = Mage::helper("camminoshipping/custom");
+
         if (is_array($services)) {
+            $services = $custom->removeService($services);
             return $services;
         }
 
         return null;
     }
+
+
     
     private static function sortRates($a, $b) {
         return $a["price"] - $b["price"];
