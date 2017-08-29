@@ -138,6 +138,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             case '41106': // sem contrato
             case '41211': // com contrato
             case '41068': // com contrato
+            case '04669': // com contrato
                 return 'PAC';
                 break;
             
@@ -167,6 +168,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             case '40444': // com contrato
             case '40568': // com contrato
             case '40606': // com contrato
+            case '04162': // com contrato
                 return 'SEDEX';
                 break;
 
@@ -273,8 +275,6 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
         return null;
     }
-
-
     
     private static function sortRates($a, $b) {
         return $a["price"] - $b["price"];
@@ -282,5 +282,14 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
     
     public function getAllowedMethods() {
         return array("correios" => $this->getConfigData("name"));
+    }
+
+    public function getTrackingInfo($tracking) {
+        $track = Mage::getModel('shipping/tracking_result_status');
+        $track->setUrl('http://www.linkcorreios.com.br/?id=' . $tracking)
+            ->setTracking($tracking)
+            ->setCarrierTitle($this->getConfigData('name'));
+
+        return $track;
     }
 }
