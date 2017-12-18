@@ -293,7 +293,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         return null;
     }
     
-    private static function sortRates($a, $b) {
+    public static function sortRates($a, $b) {
         return $a["price"] - $b["price"];
     }
     
