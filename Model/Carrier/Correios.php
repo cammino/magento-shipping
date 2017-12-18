@@ -72,7 +72,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 	        $_services = $this->getShippingAmount($originPostcode, $destPostcode, $_weight, $_packageX, $_packageY, $_packageZ);
 	    }
 
-        $this->getHelper()->applyCustomRules($_services, array(
+        $_services = $this->getHelper()->applyCustomRules($_services, array(
             'originPostcode' => $originPostcode,
             'destPostcode' => $destPostcode,
             'weight' => $_weight,
