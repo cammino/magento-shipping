@@ -39,7 +39,17 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 $_productId = $_product->getId();
                 $_product  = Mage::getModel('catalog/product')->load($_productId);
 
-                $_weight += (floatval($_product->getShippingWeight()) > 0 ? floatval($_product->getShippingWeight()) : $_defaultWeight) * $item->getQty();
+                $_weightProd = 0;
+
+                if ($_product->getShippingWeight()) {
+                    $_weightProd = floatval($_product->getShippingWeight());
+                } else if($_product->getWeight()) {
+                    $_weightProd = floatval($_product->getWeight());
+                } else {
+                    $_weightProd = floatval($_defaultWeight);
+                }
+
+                $_weight += $_weightProd * $item->getQty();
                 $_packageX += (floatval($_product->getShippingX()) > 0 ? floatval($_product->getShippingX()) : $_defaultX) * $item->getQty();
                 $_packageY += (floatval($_product->getShippingY()) > 0 ? floatval($_product->getShippingY()) : $_defaultY) * $item->getQty();
                 $_packageZ += (floatval($_product->getShippingZ()) > 0 ? floatval($_product->getShippingZ()) : $_defaultZ) * $item->getQty();
