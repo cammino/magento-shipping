@@ -5,7 +5,6 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
     
     public function collectRates(Mage_Shipping_Model_Rate_Request $request) {        
         
-        $customHelper = Mage::helper("camminoshipping/custom");
         $result = Mage::getModel("shipping/rate_result");
         $error = Mage::getModel("shipping/rate_result_error");
 
@@ -103,7 +102,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                     $service["days"] += $immediateShipmentDays;
                 }
 
-                $this->addRateResult($result, $service["price"], $service["code"], $customHelper->shippingDays($service["days"]), $_shippingTitlePrefix.$this->shippingTitle($service["code"]));
+                $this->addRateResult($result, $service["price"], $service["code"], $this->getHelper()->shippingDays($service["days"]), $_shippingTitlePrefix.$this->shippingTitle($service["code"]));
             }
 
         } else {
@@ -257,6 +256,8 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
         $result = $this->getXml($url);
 
+
+
         return $result;
     }
 
@@ -277,10 +278,8 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             );
         }
 
-        $customHelper = Mage::helper("camminoshipping/custom");
-
         if (is_array($services)) {
-            $services = $customHelper->removeService($services);
+            $services = $this->getHelper()->removeService($services);
             return $services;
         }
 
@@ -302,5 +301,10 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             ->setCarrierTitle($this->getConfigData('name'));
 
         return $track;
+    }
+
+    public function getHelper() {
+        $customHelper = Mage::helper("camminoshipping/custom");
+        return $customHelper;
     }
 }
