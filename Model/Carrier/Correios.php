@@ -72,6 +72,15 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 	        $_services = $this->getShippingAmount($originPostcode, $destPostcode, $_weight, $_packageX, $_packageY, $_packageZ);
 	    }
 
+        $this->getHelper()->applyCustomRules($_services, array(
+            'originPostcode' => $originPostcode,
+            'destPostcode' => $destPostcode,
+            'weight' => $_weight,
+            'packageX' => $_packageX,
+            'packageY' => $_packageY,
+            'packageZ' => $_packageZ
+        ));
+
         $_shippingTitlePrefix = "";
 
         if ( count($_services) > 0 ) {
@@ -255,8 +264,6 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         $url .= "&nIndicaCalculo=3";
 
         $result = $this->getXml($url);
-
-
 
         return $result;
     }

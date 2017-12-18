@@ -12,4 +12,8 @@ class Cammino_Shipping_Helper_Data extends Mage_Core_Helper_Abstract
             return "$days dias úteis";
         }
     }
+
+    public function applyCustomRules($services, $args) {
+        return $services;
+    }
 }
