@@ -43,7 +43,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 if ($_product->getShippingWeight()) {
                     $_weightProd = floatval($_product->getShippingWeight());
                 } else if(floatval($item->getWeight()) > 0) {
-                    $_weightProd = floatval($item->getWeight()));
+                    $_weightProd = floatval($item->getWeight());
                 } else {
                     $_weightProd = floatval($_defaultWeight);
                 }
