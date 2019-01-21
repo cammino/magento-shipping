@@ -25,6 +25,7 @@ class Cammino_Shipping_Model_Source_Correios_Services
 				array("value"=>"40606", "label"=>"SEDEX (com contrato) 40606"),
 				array("value"=>"04162", "label"=>"SEDEX (com contrato) 04162"),
 				array("value"=>"40215", "label"=>"SEDEX 10"),
+				array("value"=>"40169", "label"=>"SEDEX 12"),
 				array("value"=>"40290", "label"=>"SEDEX Hoje"),
 				
 				// e-SEDEX
@@ -38,6 +39,7 @@ class Cammino_Shipping_Model_Source_Correios_Services
 				array("value"=>"41106", "label"=>"PAC"),
 				array("value"=>"40010", "label"=>"SEDEX"),
 				array("value"=>"40215", "label"=>"SEDEX 10"),
+				array("value"=>"40169", "label"=>"SEDEX 12"),
 				array("value"=>"40290", "label"=>"SEDEX Hoje")
 	        );
     	}
