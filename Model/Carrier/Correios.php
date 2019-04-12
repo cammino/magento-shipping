@@ -1,9 +1,28 @@
 <?php
-class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrier_Abstract implements Mage_Shipping_Model_Carrier_Interface {
+/**
+ * Correios.php
+ * 
+ * @category Cammino
+ * @package  Cammino_Shipping
+ * @author   Cammino Digital <suporte@cammino.com.br>
+ * @license  http://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
+ * @link     https://github.com/cammino/magento-shipping
+ */
+
+class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrier_Abstract implements Mage_Shipping_Model_Carrier_Interface
+{
 
     protected $_code = "correios";
     
-    public function collectRates(Mage_Shipping_Model_Rate_Request $request) {        
+    /**
+     * Function responsible for remove some shipping service
+     * 
+     * @param object $request Magento request object
+     * 
+     * @return object
+     */
+    public function collectRates(Mage_Shipping_Model_Rate_Request $request)
+    {        
         
         $result = Mage::getModel("shipping/rate_result");
         $error = Mage::getModel("shipping/rate_result_error");
@@ -42,7 +61,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
                 if ($_product->getShippingWeight()) {
                     $_weightProd = floatval($_product->getShippingWeight());
-                } else if(floatval($item->getWeight()) > 0) {
+                } else if (floatval($item->getWeight()) > 0) {
                     $_weightProd = floatval($item->getWeight());
                 } else {
                     $_weightProd = floatval($_defaultWeight);
@@ -55,11 +74,11 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
                 //  Se o modulo de envio imediato estiver habilitado e ainda não tem nenhum produto com envio imediato
                 //  verifica se o produto tem envio imediato
-                if($immediateShipment && !$calcImmediateShipment){
+                if ($immediateShipment && !$calcImmediateShipment) {
                     $pis = $_product->getData('immediate_shipping');
 
                     // Se o produto NÃO (0) tem envio imediato, configura variavel para adicionar os dias extras
-                    if($pis == "0" && $pis != null){
+                    if ($pis == "0" && $pis != null) {
                         $calcImmediateShipment = true;
                     }
                 }
@@ -67,23 +86,26 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             }
         }
 
-	    if ( ($_weight > 0) && ($_packageX > 0) && ($_packageY > 0) && ($_packageZ > 0) ) {
-	        $_services = null;
-	        $_services = $this->getShippingAmount($originPostcode, $destPostcode, $_weight, $_packageX, $_packageY, $_packageZ);
-	    }
+        
+        if (($_weight > 0) && ($_packageX > 0) && ($_packageY > 0) && ($_packageZ > 0)) {
+            $_services = null;
+            $_services = $this->getShippingAmount($originPostcode, $destPostcode, $_weight, $_packageX, $_packageY, $_packageZ);
+        }
 
-        $_services = $this->getHelper()->applyCustomRules($_services, array(
+        $packinfo = array (
             'originPostcode' => $originPostcode,
             'destPostcode' => $destPostcode,
             'weight' => $_weight,
             'packageX' => $_packageX,
             'packageY' => $_packageY,
             'packageZ' => $_packageZ
-        ));
+        );
+
+        $_services = $this->getHelper()->applyCustomRules($_services, $packinfo);
 
         $_shippingTitlePrefix = "";
 
-        if ( count($_services) > 0 ) {
+        if (count($_services) > 0) {
 
             usort($_services, array('Cammino_Shipping_Model_Carrier_Correios','sortRates'));
 
@@ -107,11 +129,11 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                     $service["days"] += $_shippingDaysExtra;    
                 }
 
-                if($calcImmediateShipment){
+                if ($calcImmediateShipment) {
                     $service["days"] += $immediateShipmentDays;
                 }
 
-                $this->addRateResult($result, $service["price"], $service["code"], $this->getHelper()->shippingDays($service["days"]), $_shippingTitlePrefix.$this->shippingTitle($service["code"]));
+                $this->addRateResult($result, $service["price"], $service["code"], $this->getHelper()->shippingDays($service["days"]), $_shippingTitlePrefix.$this->_shippingTitle($service["code"]));
             }
 
         } else {
@@ -121,7 +143,22 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         return $result;
     }
     
-    private function addRateResult($result, $shippingPrice, $shippingCode, $shippingDays, $shippingTitle) {
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName
+
+    /**
+     * Function responsible for adding shipping result to Magento
+     * 
+     * @param object $result        Magento result object
+     * @param int    $shippingPrice Shipping price value
+     * @param int    $shippingCode  Shipping service code
+     * @param string $shippingDays  Days to shipping end message
+     * @param string $shippingTitle Days to shipping start message
+     * 
+     * @return null
+     */
+    private function addRateResult($result, $shippingPrice, $shippingCode, $shippingDays, $shippingTitle)
+    {
+        // phpcs:enable PEAR.NamingConventions.ValidFunctionName
         $method = Mage::getModel("shipping/rate_result_method");
         $method->setCarrier("correios");
         $method->setCarrierTitle($this->getConfigData("title"));
@@ -132,83 +169,127 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         $result->append($method);
     }
     
-    private function addError($result, $errorMessage) {
-        $error = Mage::getModel ("shipping/rate_result_error");        
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName
+    
+    /**
+     * Function responsible for adding error message in shipping result
+     * 
+     * @param object $result       Magento result object
+     * @param string $errorMessage Shipping error message
+     * 
+     * @return null
+     */
+    private function addError($result, $errorMessage)
+    {
+        // phpcs:enable PEAR.NamingConventions.ValidFunctionName
+        $error = Mage::getModel("shipping/rate_result_error");        
         $error->setCarrier("correios");
         $error->setCarrierTitle($this->getConfigData("title"));
         $error->setErrorMessage("$errorMessage");
         $result->append($error);
     }
     
-    private function shippingDays($days) {
-        if(intval($days) == 1) {
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName
+
+    /**
+     * Function responsible for format return message according to number of days
+     * 
+     * @param float $days number of days to shipping
+     * 
+     * @return string
+     */
+    private function shippingDays($days)
+    {
+        // phpcs:enable PEAR.NamingConventions.ValidFunctionName
+        
+        if (intval($days) == 1) {
             return "um dia útil";
         } else {
             return "$days dias úteis";
         }
     }
 
-    private function shippingTitle($code)
+    /**
+     * Function responsible for returning shipping title based on shipping code
+     * 
+     * @param int $code shipping code number
+     * 
+     * @return string
+     */
+    private function _shippingTitle($code)
     {
         switch ($code) {
-            case '00000':
-                return "Grátis";
-                break;
-            case '41106': // sem contrato
-            case '41211': // com contrato
-            case '41068': // com contrato
-            case '04669': // com contrato
-                return 'PAC';
-                break;
-            
-            case '40045': // sem contrato
-            case '40126': // com contrato
-                return 'SEDEX a cobrar';
-                break;
+        case '00000':
+            return "Grátis";
+            break;
+        case '41106': // sem contrato
+        case '41211': // com contrato
+        case '41068': // com contrato
+        case '04669': // com contrato
+            return 'PAC';
+            break;
+        
+        case '40045': // sem contrato
+        case '40126': // com contrato
+            return 'SEDEX a cobrar';
+            break;
 
-            case '81019': // com contrato
-            case '81868': // com contrato (grupo 1)
-            case '81833': // com contrato (grupo 2)
-            case '81850': // com contrato (grupo 3)
-                return 'e-SEDEX';
-                break;
+        case '81019': // com contrato
+        case '81868': // com contrato (grupo 1)
+        case '81833': // com contrato (grupo 2)
+        case '81850': // com contrato (grupo 3)
+            return 'e-SEDEX';
+            break;
 
-            case '81027': // com contrato
-                return 'e-SEDEX prioritário';
-                break;
-                    
-            case '81035': // com contrato
-                return 'e-SEDEX express';
-                break;
+        case '81027': // com contrato
+            return 'e-SEDEX prioritário';
+            break;
+                
+        case '81035': // com contrato
+            return 'e-SEDEX express';
+            break;
 
-            case '40010': // sem contrato
-            case '40096': // com contrato
-            case '40436': // com contrato
-            case '40444': // com contrato
-            case '40568': // com contrato
-            case '40606': // com contrato
-            case '04162': // com contrato
-                return 'SEDEX';
-                break;
+        case '40010': // sem contrato
+        case '40096': // com contrato
+        case '40436': // com contrato
+        case '40444': // com contrato
+        case '40568': // com contrato
+        case '40606': // com contrato
+        case '04162': // com contrato
+            return 'SEDEX';
+            break;
 
-            case '40215':
-                return 'SEDEX 10';
-                break;
+        case '40215':
+            return 'SEDEX 10';
+            break;
 
-            case '40169':
-                return 'SEDEX 12';
-                break;
+        case '40169':
+            return 'SEDEX 12';
+            break;
 
-            case '40290':
-                return 'SEDEX Hoje';    
-                break;
+        case '40290':
+            return 'SEDEX Hoje';    
+            break;
 
-            default:
-                break;
+        default:
+            break;
         }
     }
-    
-    public function getShippingAmount($originPostcode, $destPostcode, $weight, $x, $y, $z) {
+
+    /**
+     * Function responsible for returning correios webservice shipping value
+     * 
+     * @param string $originPostcode origin zip code
+     * @param string $destPostcode   destin zip code
+     * @param float  $weight         shipping package weight
+     * @param float  $x              shipping package x dimension
+     * @param float  $y              shipping package y dimension
+     * @param float  $z              shipping package z dimension
+     * 
+     * @return array
+     */
+    public function getShippingAmount($originPostcode, $destPostcode, $weight, $x, $y, $z)
+    {
 
         if(Mage::getStoreConfig('carriers/correios/defaultweighttype') != 'kg')
             //está cadastrado em gramas, divide por 1000
@@ -274,10 +355,20 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         return $result;
     }
 
-    public function getXml($url) {
+    /**
+     * Function responsible for returning correios webservice shipping value
+     * 
+     * @param string $url correios webservice shipping price url
+     * 
+     * @return array|null
+     */
+    public function getXml($url)
+    {
         $content = file_get_contents($url);
         $xml = simplexml_load_string($content);
         $services = null;
+
+        // phpcs:disable Zend.NamingConventions.ValidVariableName
 
         foreach ($xml->cServico as $cServico) {
 
@@ -291,6 +382,8 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             );
         }
 
+        // phpcs:enable Zend.NamingConventions.ValidVariableName
+
         if (is_array($services)) {
             $services = $this->getHelper()->removeService($services);
             return $services;
@@ -299,15 +392,38 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         return null;
     }
     
-    public static function sortRates($a, $b) {
+    /**
+     * Function responsible for returning difference between prices
+     * 
+     * @param array $a shipping value infos
+     * @param array $b another shipping value infos
+     * 
+     * @return float
+     */
+    public static function sortRates($a, $b)
+    {
         return $a["price"] - $b["price"];
     }
     
-    public function getAllowedMethods() {
+    /**
+     * Function responsible for returning correios allowed shipping methods
+     * 
+     * @return array
+     */
+    public function getAllowedMethods()
+    {
         return array("correios" => $this->getConfigData("name"));
     }
 
-    public function getTrackingInfo($tracking) {
+    /**
+     * Function responsible for returning tracking information
+     * 
+     * @param string $tracking correios tracking id
+     * 
+     * @return object
+     */
+    public function getTrackingInfo($tracking)
+    {
         $track = Mage::getModel('shipping/tracking_result_status');
         $track->setUrl('http://www.linkcorreios.com.br/?id=' . $tracking)
             ->setTracking($tracking)
@@ -316,7 +432,13 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         return $track;
     }
 
-    public function getHelper() {
+    /**
+     * Function responsible for returning correios custom helper instance
+     * 
+     * @return object
+     */
+    public function getHelper()
+    {
         $customHelper = Mage::helper("camminoshipping/custom");
         return $customHelper;
     }
