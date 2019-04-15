@@ -14,8 +14,37 @@
 		<models>
 			<camminoshipping>
 				<class>Cammino_Shipping_Model</class>
+				<resourceModel>camminoshipping_mysql4</resourceModel>
 			</camminoshipping>
+			<camminoshipping_mysql4>
+                <class>Cammino_Shipping_Model_Mysql4</class>
+                <entities>
+                    <shippingcache>
+                        <table>shipping_cache</table>
+                    </shippingcache>
+                </entities>
+            </camminoshipping_mysql4>
 		</models>
+		<resources>
+            <camminoshipping_setup>
+                <setup>
+                    <module>Cammino_Shipping</module>
+                </setup>
+                <connection>
+                    <use>core_setup</use>
+                </connection>
+            </camminoshipping_setup>
+            <camminoshipping_write>
+                <connection>
+                    <use>core_write</use>
+                </connection>
+            </camminoshipping_write>
+            <camminoshipping_read>
+                <connection>
+                    <use>core_read</use>
+                </connection>
+            </camminoshipping_read>
+        </resources>
 		<sales>
 			<shipping>
 				<carriers>
@@ -26,6 +55,17 @@
 			</shipping>
 		</sales>
 	</global>
+	<frontend>
+        <routers>
+            <camminoshipping>
+                <use>standard</use>
+                <args>
+                    <module>Cammino_Shipping</module>
+                    <frontName>camminoshipping</frontName>
+                </args>
+            </camminoshipping>
+        </routers>
+    </frontend>
 	<default>
 		<carriers>
 			<correios>

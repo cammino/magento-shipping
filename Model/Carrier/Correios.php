@@ -324,8 +324,6 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
         if ($weight > 30)
             $weight = 30;
-
-        $formatedWeight = number_format($weight, 2, ',', '');
         
         // Configs
         $_services = $this->getConfigData("services");
@@ -364,6 +362,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
      */
     public function getXml($url)
     {
+        var_dump($url); die;
         $content = file_get_contents($url);
         $xml = simplexml_load_string($content);
         $services = null;
