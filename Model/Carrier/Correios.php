@@ -67,11 +67,9 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             }
         }
 
-	    if ( ($_weight > 0) && ($_packageX > 0) && ($_packageY > 0) && ($_packageZ > 0) ) {
 	        $_services = null;
-	        $_services = $this->getShippingAmount($originPostcode, $destPostcode, $_weight, $_packageX, $_packageY, $_packageZ);
-	    }
-
+            $_services = $this->getShippingAmount($originPostcode, $destPostcode, $_weight, $_packageX, $_packageY, $_packageZ);
+            
         $_services = $this->getHelper()->applyCustomRules($_services, array(
             'originPostcode' => $originPostcode,
             'destPostcode' => $destPostcode,
@@ -247,26 +245,27 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         $_user = $this->getConfigData("user");
         $_pass = $this->getConfigData("pass");
         
-        $url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx";
-        $url .= "?nCdEmpresa=" . $_user;
-        $url .= "&sDsSenha=" . $_pass;
-        $url .= "&nCdServico=" . $_services;
-        $url .= "&sCepOrigem=" . $originPostcode;
-        $url .= "&sCepDestino=" . $destPostcode;
-        $url .= "&nVlPeso=" . $formatedWeight;
-        $url .= "&nCdFormato=1";
-        $url .= "&nVlComprimento=" . $x;
-        $url .= "&nVlAltura=" . $y;
-        $url .= "&nVlLargura=" . $z;
-        $url .= "&sCdMaoPropria=n";
-        $url .= "&nVlValorDeclarado=0";
-        $url .= "&sCdAvisoRecebimento=n";
-        $url .= "&nVlDiametro=0";
-        $url .= "&StrRetorno=xml";
-        $url .= "&nIndicaCalculo=3";
-
-        $result = $this->getXml($url);
-
+        $result = [];
+        foreach(explode(',', $_services) as $service) {
+            $url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx";
+            $url .= "?nCdEmpresa=" . $_user;
+            $url .= "&sDsSenha=" . $_pass;
+            $url .= "&nCdServico=" . $service;
+            $url .= "&sCepOrigem=" . $originPostcode;
+            $url .= "&sCepDestino=" . $destPostcode;
+            $url .= "&nVlPeso=" . $formatedWeight;
+            $url .= "&nCdFormato=1";
+            $url .= "&nVlComprimento=" . $x;
+            $url .= "&nVlAltura=" . $y;
+            $url .= "&nVlLargura=" . $z;
+            $url .= "&sCdMaoPropria=n";
+            $url .= "&nVlValorDeclarado=0";
+            $url .= "&sCdAvisoRecebimento=n";
+            $url .= "&nVlDiametro=0";
+            $url .= "&StrRetorno=xml";
+            $url .= "&nIndicaCalculo=3";
+            $result[] = $this->getXml($url)[0];
+        }
         return $result;
     }
 
