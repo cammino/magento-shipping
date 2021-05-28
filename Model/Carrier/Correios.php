@@ -156,6 +156,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             case '41211': // com contrato
             case '41068': // com contrato
             case '04669': // com contrato
+            case '04510': // sem contrato
                 return 'PAC';
                 break;
             
@@ -186,6 +187,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             case '40568': // com contrato
             case '40606': // com contrato
             case '04162': // com contrato
+            case '04014': // sem contrato
                 return 'SEDEX';
                 break;
 
