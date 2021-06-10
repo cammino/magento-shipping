@@ -308,6 +308,10 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         return array("correios" => $this->getConfigData("name"));
     }
 
+    public function isTrackingAvailable() {
+        return true;
+    }
+
     public function getTrackingInfo($tracking) {
         $track = Mage::getModel('shipping/tracking_result_status');
         $track->setUrl('http://www.linkcorreios.com.br/?id=' . $tracking)
@@ -315,6 +319,22 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             ->setCarrierTitle($this->getConfigData('name'));
 
         return $track;
+    }
+
+    public function getTracking($trackings)
+    {
+        $this->_result = Mage::getModel('shipping/tracking_result');
+        foreach ((array) $trackings as $code) {
+            
+            $track = Mage::getModel('shipping/tracking_result_status');
+            $track->setUrl('http://www.linkcorreios.com.br/?id=' . $code)
+                ->setTracking($code)
+                ->setCarrierTitle($this->getConfigData('name'));
+
+            $this->_result->append($track);
+
+        }
+        return $this->_result;
     }
 
     public function getHelper() {
