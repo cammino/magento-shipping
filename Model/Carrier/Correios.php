@@ -156,6 +156,9 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             case '41211': // com contrato
             case '41068': // com contrato
             case '04669': // com contrato
+            case '03298': // com contrato
+                return 'PAC CONTRATO';
+                break;
             case '04510': // sem contrato
                 return 'PAC';
                 break;
@@ -187,6 +190,9 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             case '40568': // com contrato
             case '40606': // com contrato
             case '04162': // com contrato
+            case '03220': // com contrato
+                return 'SEDEX CONTRATO';
+                break;
             case '04014': // sem contrato
                 return 'SEDEX';
                 break;
@@ -201,6 +207,10 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
             case '40290':
                 return 'SEDEX Hoje';    
+                break;
+
+            case '04227':
+                return 'MINI ENVIOS';
                 break;
 
             default:
