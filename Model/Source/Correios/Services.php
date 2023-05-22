@@ -30,7 +30,9 @@ class Cammino_Shipping_Model_Source_Correios_Services
 				array("value"=>"40606", "label"=>"SEDEX com contrato - 40606"),
 				array("value"=>"04162", "label"=>"SEDEX com contrato - 04162"),
 				array("value"=>"04553", "label"=>"SEDEX com contrato - 04553"),
+				array("value"=>"03158", "label"=>"SEDEX 10 - 03158"),
 				array("value"=>"40215", "label"=>"SEDEX 10 - 40215"),
+				array("value"=>"03140", "label"=>"SEDEX 12 - 03140"),
 				array("value"=>"40169", "label"=>"SEDEX 12 - 40169"),
 				array("value"=>"40290", "label"=>"SEDEX Hoje - 40290"),
 				

@@ -201,8 +201,16 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 return 'SEDEX';
                 break;
 
+            case '03158';
+                return 'SEDEX 10';
+                break;    
+
             case '40215':
                 return 'SEDEX 10';
+                break;
+
+            case '03140';
+                return 'SEDEX 12';
                 break;
 
             case '40169':
