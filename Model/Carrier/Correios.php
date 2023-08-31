@@ -67,8 +67,8 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             }
         }
 
-	        $_services = null;
-            $_services = $this->getShippingAmount($originPostcode, $destPostcode, $_weight, $_packageX, $_packageY, $_packageZ);
+	    $_services = null;
+        $_services = $this->getShippingAmount($originPostcode, $destPostcode, $_weight, $_packageX, $_packageY, $_packageZ);
             
         $_services = $this->getHelper()->applyCustomRules($_services, array(
             'originPostcode' => $originPostcode,
@@ -239,17 +239,25 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         $data = array('numero' => $contract);
         $result = $this->requestUrl($url, $data, 'POST', $headers);
         $json = json_decode($result);
-        return $json['token'];
+
+        if ($jsonPrice->msg) {
+            return null;
+        } else {
+            return $json->token;
+        }
     }
 
     public function requestUrl($url, $data = array(), $method = 'GET', $headers = array()) {
 
         $payload = '';
         $ch = curl_init($url);
+        $headers[] = 'Content-Type: application/json';
 
         if ($method == 'POST') {
             $payload = json_encode($data);
+            $headers[] = 'Content-Length: ' . strlen($payload);
             curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
         } else {
             $payload = http_build_query($data);
             $url .= '?' . $payload;
@@ -259,23 +267,23 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         curl_setopt($ch, CURLOPT_SSLVERSION, 6);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-
-        $headers[] = 'Content-Type: application/json';
-        $headers[] = 'Content-Length: ' . strlen($payload);
-
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+        Mage::log('REQUEST:', null, 'correios.log');
+        Mage::log($url, null, 'correios.log');
+        Mage::log($payload, null, 'correios.log');
 
         $result = curl_exec($ch);
         curl_close($ch);
+
+        Mage::log('RESPONSE:', null, 'correios.log');
+        Mage::log($result, null, 'correios.log');
 
         return $result;
     }
     
     public function getShippingAmount($originPostcode, $destPostcode, $weight, $x, $y, $z) {
-        $mode = $this->getConfigData("mode");
-
-        if ($mode == 'rest') {
+        if ($this->getConfigData("mode") == 'rest') {
             return $this->getRestShippingAmount($originPostcode, $destPostcode, $weight, $x, $y, $z);
         } else {
             return $this->getLegacyShippingAmount($originPostcode, $destPostcode, $weight, $x, $y, $z);
@@ -287,12 +295,16 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         $this->fixDimensions($weight, $x, $y, $z);
 
         $token = $this->getToken();
+
+        if ($token == null) {
+            return array();
+        }
+
         $services = $this->getConfigData("services");
+        $formatedWeight = number_format($weight, 0, '', '');
         $rates = [];
 
         foreach(explode(',', $services) as $service) {
-            $url = 'https://api.correios.com.br/preco/v1/nacional/' . $service;
-
             $data = array(
                 'cepDestino' => $destPostcode,
                 'cepOrigem' => $originPostcode,
@@ -303,27 +315,38 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 'altura' => $y
             );
 
-            $rates[] = $this->getRestRates($url, $data, $token);
+            $rates[] = $this->getRestRates($service, $data, $token);
         }
 
         return $rates;
     }
 
-    public function getRestRates($url, $data, $token) {
+    public function getRestRates($service, $data, $token) {
 
         $headers = array('Authorization: Bearer  ' . $token);
-        $result = $this->requestUrl($url, $data, 'POST', $headers);
-        $json = json_decode($result);
+        
+        $urlPrice = 'https://api.correios.com.br/preco/v1/nacional/' . $service;
+        $resultPrice = $this->requestUrl($urlPrice, $data, 'GET', $headers);
+        $jsonPrice = json_decode($resultPrice);
+
+        $urlDeadline = 'https://api.correios.com.br/prazo/v1/nacional/' . $service;
+        $dataDeadline = array(
+            'coProduto' => $service,
+            'cepOrigem' => $data['cepOrigem'],
+            'cepDestino' => $data['cepDestino']
+        );
+        $resultDeadline = $this->requestUrl($urlDeadline, $dataDeadline, 'GET', $headers);
+        $jsonDeadline = json_decode($resultDeadline);
+
         $services = array();
 
-        if ($json['msg']) {
-            Mage::log($json, null, 'shipping.log');
+        if ($jsonPrice->msg) {
             return null;
         } else {
             $services = array (
-                "code" => $json['coProduto'],
-                "days" => 2, // Prazos
-                "price" => floatval(str_replace(",", ".", str_replace(".", "", $json['pcFinal'])))
+                "code" => $jsonPrice->coProduto,
+                "days" => $jsonDeadline->prazoEntrega,
+                "price" => floatval(str_replace(",", ".", str_replace(".", "", $jsonPrice->pcFinal)))
             );
 
             $services = $this->getHelper()->removeService($services);
@@ -340,6 +363,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         $_services = $this->getConfigData("services");
         $_user = $this->getConfigData("user");
         $_pass = $this->getConfigData("pass");
+        $formatedWeight = number_format($weight, 2, ',', '');
         $rates = [];
 
         foreach(explode(',', $_services) as $service) {
@@ -390,10 +414,34 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         return null;
     }
 
-    public function fixDimensions($weight, $x, $y, $z) {
-        if(Mage::getStoreConfig('carriers/correios/defaultweighttype') != 'kg')
-            //está cadastrado em gramas, divide por 1000
-            $weight = $weight / 1000;
+    public function fixDimensions(&$weight, &$x, &$y, &$z) {
+
+        if ($this->getConfigData("mode") == 'rest') {
+            if(Mage::getStoreConfig('carriers/correios/defaultweighttype') == 'kg') {
+                $weight = $weight * 1000;
+            }
+
+            if ($weight == 0) {
+                $weight = 300;
+            }
+                
+            if ($weight > 30000) {
+                $weight = 30000;
+            }
+
+        } else {
+            if(Mage::getStoreConfig('carriers/correios/defaultweighttype') != 'kg') {
+                $weight = $weight / 1000;
+            }
+
+            if ($weight == 0) {
+                $weight = 0.3;
+            }
+                
+            if ($weight > 30) {
+                $weight = 30;
+            }
+        }
 
         if ($x < 16)
             $x = 16;
@@ -418,14 +466,6 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             $y = 66;
             $z = 66;
         }
-
-        if ($weight == 0)
-            $weight = 0.3;
-
-        if ($weight > 30)
-            $weight = 30;
-
-        $formatedWeight = number_format($weight, 2, ',', '');
     }
     
     public static function sortRates($a, $b) {
