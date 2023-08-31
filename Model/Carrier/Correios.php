@@ -229,9 +229,168 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 break;
         }
     }
+
+    public function getToken() {
+        $url = 'https://api.correios.com.br/token/v1/autentica/contrato';
+        $user = $this->getConfigData("user");
+        $pass = $this->getConfigData("pass");
+        $contract = $this->getConfigData("contract");
+        $headers = array('Authorization: Basic ' . base64_encode($user . ':' . $pass));
+        $data = array('numero' => $contract);
+        $result = $this->requestUrl($url, $data, 'POST', $headers);
+        $json = json_decode($result);
+        return $json['token'];
+    }
+
+    public function requestUrl($url, $data = array(), $method = 'GET', $headers = array()) {
+
+        $payload = '';
+        $ch = curl_init($url);
+
+        if ($method == 'POST') {
+            $payload = json_encode($data);
+            curl_setopt($ch, CURLOPT_POST, true);
+        } else {
+            $payload = http_build_query($data);
+            $url .= '?' . $payload;
+        }
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+        curl_setopt($ch, CURLOPT_SSLVERSION, 6);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+
+        $headers[] = 'Content-Type: application/json';
+        $headers[] = 'Content-Length: ' . strlen($payload);
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+        $result = curl_exec($ch);
+        curl_close($ch);
+
+        return $result;
+    }
     
     public function getShippingAmount($originPostcode, $destPostcode, $weight, $x, $y, $z) {
+        $mode = $this->getConfigData("mode");
 
+        if ($mode == 'rest') {
+            return $this->getRestShippingAmount($originPostcode, $destPostcode, $weight, $x, $y, $z);
+        } else {
+            return $this->getLegacyShippingAmount($originPostcode, $destPostcode, $weight, $x, $y, $z);
+        }
+    }
+
+    public function getRestShippingAmount($originPostcode, $destPostcode, $weight, $x, $y, $z) {
+
+        $this->fixDimensions($weight, $x, $y, $z);
+
+        $token = $this->getToken();
+        $services = $this->getConfigData("services");
+        $rates = [];
+
+        foreach(explode(',', $services) as $service) {
+            $url = 'https://api.correios.com.br/preco/v1/nacional/' . $service;
+
+            $data = array(
+                'cepDestino' => $destPostcode,
+                'cepOrigem' => $originPostcode,
+                'psObjeto' => $formatedWeight,
+                'tpObjeto' => '2',
+                'comprimento' => $x,
+                'largura' => $z,
+                'altura' => $y
+            );
+
+            $rates[] = $this->getRestRates($url, $data, $token);
+        }
+
+        return $rates;
+    }
+
+    public function getRestRates($url, $data, $token) {
+
+        $headers = array('Authorization: Bearer  ' . $token);
+        $result = $this->requestUrl($url, $data, 'POST', $headers);
+        $json = json_decode($result);
+        $services = array();
+
+        if ($json['msg']) {
+            Mage::log($json, null, 'shipping.log');
+            return null;
+        } else {
+            $services = array (
+                "code" => $json['coProduto'],
+                "days" => 2, // Prazos
+                "price" => floatval(str_replace(",", ".", str_replace(".", "", $json['pcFinal'])))
+            );
+
+            $services = $this->getHelper()->removeService($services);
+
+            return $services;
+        }
+    }
+
+    public function getLegacyShippingAmount($originPostcode, $destPostcode, $weight, $x, $y, $z) {
+        
+        $this->fixDimensions($weight, $x, $y, $z);
+
+        // Configs
+        $_services = $this->getConfigData("services");
+        $_user = $this->getConfigData("user");
+        $_pass = $this->getConfigData("pass");
+        $rates = [];
+
+        foreach(explode(',', $_services) as $service) {
+            $url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx";
+            $url .= "?nCdEmpresa=" . $_user;
+            $url .= "&sDsSenha=" . $_pass;
+            $url .= "&nCdServico=" . $service;
+            $url .= "&sCepOrigem=" . $originPostcode;
+            $url .= "&sCepDestino=" . $destPostcode;
+            $url .= "&nVlPeso=" . $formatedWeight;
+            $url .= "&nCdFormato=1";
+            $url .= "&nVlComprimento=" . $x;
+            $url .= "&nVlAltura=" . $y;
+            $url .= "&nVlLargura=" . $z;
+            $url .= "&sCdMaoPropria=n";
+            $url .= "&nVlValorDeclarado=0";
+            $url .= "&sCdAvisoRecebimento=n";
+            $url .= "&nVlDiametro=0";
+            $url .= "&StrRetorno=xml";
+            $url .= "&nIndicaCalculo=3";
+            $rates[] = $this->getXmlRates($url)[0];
+        }
+        return $rates;
+    }
+
+    public function getXmlRates($url) {
+        $content = file_get_contents($url);
+        $xml = simplexml_load_string($content);
+        $services = null;
+
+        foreach ($xml->cServico as $cServico) {
+
+            if ((strval($cServico->MsgErro) != "") && (intval($cServico->Erro) != 9) && (intval($cServico->Erro) != 10) && (intval($cServico->Erro) != 11))
+                continue;
+
+            $services[] = array (
+                "code" => intval($cServico->Codigo),
+                "days" => intval($cServico->PrazoEntrega),
+                "price" => floatval(str_replace(",", ".", str_replace(".", "", $cServico->Valor)))
+            );
+        }
+
+        if (is_array($services)) {
+            $services = $this->getHelper()->removeService($services);
+            return $services;
+        }
+
+        return null;
+    }
+
+    public function fixDimensions($weight, $x, $y, $z) {
         if(Mage::getStoreConfig('carriers/correios/defaultweighttype') != 'kg')
             //está cadastrado em gramas, divide por 1000
             $weight = $weight / 1000;
@@ -267,59 +426,6 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             $weight = 30;
 
         $formatedWeight = number_format($weight, 2, ',', '');
-        
-        // Configs
-        $_services = $this->getConfigData("services");
-        $_user = $this->getConfigData("user");
-        $_pass = $this->getConfigData("pass");
-        
-        $result = [];
-        foreach(explode(',', $_services) as $service) {
-            $url = "http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx";
-            $url .= "?nCdEmpresa=" . $_user;
-            $url .= "&sDsSenha=" . $_pass;
-            $url .= "&nCdServico=" . $service;
-            $url .= "&sCepOrigem=" . $originPostcode;
-            $url .= "&sCepDestino=" . $destPostcode;
-            $url .= "&nVlPeso=" . $formatedWeight;
-            $url .= "&nCdFormato=1";
-            $url .= "&nVlComprimento=" . $x;
-            $url .= "&nVlAltura=" . $y;
-            $url .= "&nVlLargura=" . $z;
-            $url .= "&sCdMaoPropria=n";
-            $url .= "&nVlValorDeclarado=0";
-            $url .= "&sCdAvisoRecebimento=n";
-            $url .= "&nVlDiametro=0";
-            $url .= "&StrRetorno=xml";
-            $url .= "&nIndicaCalculo=3";
-            $result[] = $this->getXml($url)[0];
-        }
-        return $result;
-    }
-
-    public function getXml($url) {
-        $content = file_get_contents($url);
-        $xml = simplexml_load_string($content);
-        $services = null;
-
-        foreach ($xml->cServico as $cServico) {
-
-            if ((strval($cServico->MsgErro) != "") && (intval($cServico->Erro) != 9) && (intval($cServico->Erro) != 10) && (intval($cServico->Erro) != 11))
-                continue;
-
-            $services[] = array (
-                "code" => intval($cServico->Codigo),
-                "days" => intval($cServico->PrazoEntrega),
-                "price" => floatval(str_replace(",", ".", str_replace(".", "", $cServico->Valor)))
-            );
-        }
-
-        if (is_array($services)) {
-            $services = $this->getHelper()->removeService($services);
-            return $services;
-        }
-
-        return null;
     }
     
     public static function sortRates($a, $b) {

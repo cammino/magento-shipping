@@ -29,6 +29,15 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </title>
+                        <mode translate="label">
+                            <label>Modo de Integração</label>
+                            <source_model>Cammino_Shipping_Model_Source_Correios_Mode</source_model>
+                            <frontend_type>select</frontend_type>
+                            <sort_order>3</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </mode>
                         <user translate="label">
                             <label>User</label>
                             <frontend_type>text</frontend_type>
@@ -45,6 +54,14 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </pass>
+                        <contract translate="label">
+                            <label>Número do Contrato</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>5</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </contract>
                         <services translate="label">
                             <label>Serviços liberados</label>
                             <source_model>Cammino_Shipping_Model_Source_Correios_Services</source_model>
