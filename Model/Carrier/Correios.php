@@ -231,9 +231,6 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
     }
 
     public function getToken() {
-
-        // TODO: Colocar token em cache uma vez por dia
-
         $url = 'https://api.correios.com.br/token/v1/autentica/contrato';
         $user = $this->getConfigData("user");
         $pass = $this->getConfigData("pass");
@@ -247,6 +244,19 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
             return null;
         } else {
             return $json->token;
+        }
+    }
+
+    public function refreshToken() {
+        $token = $this->getToken();
+
+        if ($token) {
+            Mage::getConfig()->saveConfig('carriers/correios/token', $token, 'default', 0);
+            Mage::app()->getConfig()->reinit();
+
+            return $token;
+        } else {
+            return null;
         }
     }
 
@@ -297,7 +307,12 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
         $this->fixDimensions($weight, $x, $y, $z);
 
-        $token = $this->getToken();
+        //$token = $this->getToken();
+        $token = $this->getConfigData("token");
+
+        if (empty(strval($token))) {
+            $token = $this->refreshToken();
+        }
 
         if ($token == null) {
             return array();

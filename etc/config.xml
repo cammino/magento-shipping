@@ -40,4 +40,16 @@
 			</correios>
 		</carriers>
 	</default>
+    <crontab>
+        <jobs>
+            <correios_refresh_token>
+                <schedule>
+                    <cron_expr>0 */3 * * *</cron_expr>
+                </schedule>
+                <run>
+                    <model>camminoshipping/carrier_correios::refreshToken</model>
+                </run>
+            </correios_refresh_token>
+        </jobs>
+    </crontab>
 </config>
