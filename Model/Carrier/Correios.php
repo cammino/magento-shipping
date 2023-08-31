@@ -231,6 +231,9 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
     }
 
     public function getToken() {
+
+        // TODO: Colocar token em cache uma vez por dia
+
         $url = 'https://api.correios.com.br/token/v1/autentica/contrato';
         $user = $this->getConfigData("user");
         $pass = $this->getConfigData("pass");
@@ -390,7 +393,15 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
     }
 
     public function getXmlRates($url) {
+
+        Mage::log('REQUEST:', null, 'correios.log');
+        Mage::log($url, null, 'correios.log');
+
         $content = file_get_contents($url);
+
+        Mage::log('RESPONSE:', null, 'correios.log');
+        Mage::log($content, null, 'correios.log');
+
         $xml = simplexml_load_string($content);
         $services = null;
 
