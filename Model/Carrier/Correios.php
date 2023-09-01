@@ -153,66 +153,58 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
     private function shippingTitle($code)
     {
         switch ($code) {
+            
             case '00000':
                 return "Grátis";
                 break;
-            case '41106': // sem contrato
-            case '41211': // com contrato
-            case '41068': // com contrato
-            case '04669': // com contrato
-            case '03298': // com contrato
-                return 'PAC CONTRATO';
-                break;
-            case '04510': // sem contrato
+
+            case '41106':
+            case '41211':
+            case '41068':
+            case '04669':
+            case '03298':
+            case '04510':
                 return 'PAC';
                 break;
             
-            case '40045': // sem contrato
-            case '40126': // com contrato
+            case '40045':
+            case '40126':
                 return 'SEDEX a cobrar';
                 break;
 
-            case '81019': // com contrato
-            case '81868': // com contrato (grupo 1)
-            case '81833': // com contrato (grupo 2)
-            case '81850': // com contrato (grupo 3)
+            case '81019':
+            case '81868':
+            case '81833':
+            case '81850':
                 return 'e-SEDEX';
                 break;
 
-            case '81027': // com contrato
+            case '81027':
                 return 'e-SEDEX prioritário';
                 break;
                     
-            case '81035': // com contrato
+            case '81035':
                 return 'e-SEDEX express';
                 break;
 
-            case '40010': // sem contrato
-            case '40096': // com contrato
-            case '40436': // com contrato
-            case '40444': // com contrato
-            case '40568': // com contrato
-            case '40606': // com contrato
-            case '04162': // com contrato
-            case '03220': // com contrato
-                return 'SEDEX CONTRATO';
-                break;
-            case '04014': // sem contrato
+            case '40010':
+            case '40096':
+            case '40436':
+            case '40444':
+            case '40568':
+            case '40606':
+            case '04162':
+            case '03220':
+            case '04014':
                 return 'SEDEX';
                 break;
 
-            case '03158';
+            case '03158':
+            case '40215':
                 return 'SEDEX 10';
                 break;    
 
-            case '40215':
-                return 'SEDEX 10';
-                break;
-
-            case '03140';
-                return 'SEDEX 12';
-                break;
-
+            case '03140':
             case '40169':
                 return 'SEDEX 12';
                 break;
