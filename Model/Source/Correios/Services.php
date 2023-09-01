@@ -43,7 +43,8 @@ class Cammino_Shipping_Model_Source_Correios_Services
 				array("value"=>"81850", "label"=>"e-SEDEX Grupo 3 - 81850"),
 
 				//Mini-envios
-				array("value"=>"04227", "label"=>"MINI ENVIOS - 04227")
+				array("value"=>"04227", "label"=>"MINI ENVIOS - 04227"),
+				array("value"=>"04960", "label"=>"MINI ENVIOS - 04960")
 	        );    		
     	} else {
     		$services = array(

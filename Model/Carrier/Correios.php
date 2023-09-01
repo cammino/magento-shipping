@@ -153,7 +153,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
     private function shippingTitle($code)
     {
         switch ($code) {
-            
+
             case '00000':
                 return "Grátis";
                 break;
@@ -214,6 +214,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 break;
 
             case '04227':
+            case '04960':
                 return 'MINI ENVIOS';
                 break;
 
