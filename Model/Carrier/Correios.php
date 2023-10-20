@@ -30,6 +30,11 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         $calcImmediateShipment = false; // Por default não calcula envio nao imediato
 
         if ($request->getAllItems()) {
+
+            $higherLength = 0;
+            $higherHeight = 0;
+            $higherWidth = 0;
+
             foreach ($request->getAllItems() as $item) {
                 
                 if ($item->getParentItem()) continue;
@@ -49,9 +54,30 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 }
 
                 $_weight += $_weightProd * $item->getQty();
-                $_packageX += (floatval($_product->getShippingX()) > 0 ? floatval($_product->getShippingX()) : $_defaultX) * $item->getQty();
-                $_packageY += (floatval($_product->getShippingY()) > 0 ? floatval($_product->getShippingY()) : $_defaultY) * $item->getQty();
-                $_packageZ += (floatval($_product->getShippingZ()) > 0 ? floatval($_product->getShippingZ()) : $_defaultZ) * $item->getQty();
+                
+                if (!empty(Mage::getStoreConfig('carriers/correios/use_higher_length'))) {
+                    if ($_product->getShippingX() > $higherLength) {
+                        $higherLength = floatval($_product->getShippingX());
+                    }
+                } else {
+                    $_packageX += (floatval($_product->getShippingX()) > 0 ? floatval($_product->getShippingX()) : $_defaultX) * $item->getQty();
+                }
+                
+                if (!empty(Mage::getStoreConfig('carriers/correios/use_higher_height'))) {
+                    if ($_product->getShippingX() > $higherHeight) {
+                        $higherHeight = floatval($_product->getShippingX());
+                    }
+                } else {
+                    $_packageY += (floatval($_product->getShippingY()) > 0 ? floatval($_product->getShippingY()) : $_defaultY) * $item->getQty();
+                }
+                
+                if (!empty(Mage::getStoreConfig('carriers/correios/use_higher_width'))) {
+                    if ($_product->getShippingX() > $higherWidth) {
+                        $higherWidth = floatval($_product->getShippingX());
+                    }
+                } else {
+                    $_packageZ += (floatval($_product->getShippingZ()) > 0 ? floatval($_product->getShippingZ()) : $_defaultZ) * $item->getQty();
+                }
 
                 //  Se o modulo de envio imediato estiver habilitado e ainda não tem nenhum produto com envio imediato
                 //  verifica se o produto tem envio imediato
@@ -65,6 +91,17 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 }
 
             }
+
+            if (!empty(Mage::getStoreConfig('carriers/correios/use_higher_length'))) {
+                $_packageX = ($higherLength > 0) ? $higherLength : $_defaultX;
+            }
+            if (!empty(Mage::getStoreConfig('carriers/correios/use_higher_height'))) {
+                $_packageY = ($higherHeight > 0) ? $higherHeight : $_defaultY;
+            }
+            if (!empty(Mage::getStoreConfig('carriers/correios/use_higher_width'))) {
+                $_packageZ = ($higherWidth > 0) ? $higherWidth : $_defaultZ;
+            }
+            
         }
 
 	    $_services = null;

@@ -153,6 +153,36 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </immediate_shipment_days>
+                        <use_higher_width translate="label">
+                            <label>Considerar somente a maior largura para entrega</label>
+                            <comment>Ao invés de somar as larguras de cada item, irá considerar apenas a maior largura</comment>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>21</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </use_higher_width>
+                        <use_higher_length translate="label">
+                            <label>Considerar somente o maior comprimento para entrega</label>
+                            <comment>Ao invés de somar os comprimentos de cada item, irá considerar apenas o maior comprimento</comment>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>22</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </use_higher_length>
+                        <use_higher_height translate="label">
+                            <label>Considerar somente a maior altura para entrega</label>
+                            <comment>Ao invés de somar as alturas de cada item, irá considerar apenas a maior altura</comment>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>23</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </use_higher_height>
                     </fields>
                 </correios>
                 <!-- /Correios -->
