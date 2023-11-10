@@ -339,6 +339,8 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
         //$token = $this->getToken();
         $token = $this->getConfigData("token");
+        $contract = $this->getConfigData("contract");
+        $nudr = $this->getConfigData("nudr");
 
         if (empty(strval($token))) {
             $token = $this->refreshToken();
@@ -362,6 +364,14 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 'largura' => $z,
                 'altura' => $y
             );
+
+            if (strval($contract) != '') {
+                $data['nuContrato'] = $contract;
+            }
+
+            if (strval($nudr) != '') {
+                $data['nuDR'] = $nudr;
+            }
 
             $rates[] = $this->getRestRates($service, $data, $token);
         }

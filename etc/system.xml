@@ -62,6 +62,14 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </contract>
+                        <nudr translate="label">
+                            <label>Número da Diretoria</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>6</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </nudr>
                         <services translate="label">
                             <label>Serviços liberados</label>
                             <source_model>Cammino_Shipping_Model_Source_Correios_Services</source_model>
