@@ -62,6 +62,14 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </contract>
+                        <postcard translate="label">
+                            <label>Cartão de Postagem</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>6</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </postcard>
                         <nudr translate="label">
                             <label>Número da Diretoria</label>
                             <frontend_type>text</frontend_type>

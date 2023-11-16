@@ -267,11 +267,18 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
     public function getToken() {
         $url = 'https://api.correios.com.br/token/v1/autentica/contrato';
+        $postcard = $this->getConfigData("postcard");
         $user = $this->getConfigData("user");
         $pass = $this->getConfigData("pass");
         $contract = $this->getConfigData("contract");
         $headers = array('Authorization: Basic ' . base64_encode($user . ':' . $pass));
         $data = array('numero' => $contract);
+
+        if (strval($postcard) != '') {
+            $url = 'https://api.correios.com.br/token/v1/autentica/cartaopostagem';
+            $data = array('numero' => $postcard);
+        }
+
         $result = $this->requestUrl($url, $data, 'POST', $headers);
         $json = json_decode($result);
 
@@ -370,11 +377,8 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 'altura' => $y
             );
 
-            if (strval($contract) != '') {
+            if ((strval($contract) != '') && (strval($nudr) != '')) {
                 $data['nuContrato'] = $contract;
-            }
-
-            if (strval($nudr) != '') {
                 $data['nuDR'] = $nudr;
             }
 
