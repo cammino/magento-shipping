@@ -306,7 +306,10 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
         $payload = '';
         $ch = curl_init($url);
-        // $headers[] = 'Content-Type: application/json';
+
+        if (strpos($url, 'autentica') !== false) {
+            $headers[] = 'Content-Type: application/json';
+        }
 
         if ($method == 'POST') {
             $payload = json_encode($data);
