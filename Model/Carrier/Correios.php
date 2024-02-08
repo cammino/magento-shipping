@@ -306,7 +306,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
         $payload = '';
         $ch = curl_init($url);
-        $headers[] = 'Content-Type: application/json';
+        // $headers[] = 'Content-Type: application/json';
 
         if ($method == 'POST') {
             $payload = json_encode($data);
@@ -316,12 +316,16 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         } else {
             $payload = http_build_query($data);
             $url .= '?' . $payload;
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
         }
 
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         curl_setopt($ch, CURLOPT_SSLVERSION, 6);
+        curl_setopt($ch, CURLOPT_ENCODING, '');
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         Mage::log('REQUEST:', null, 'correios.log');
@@ -390,7 +394,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
 
     public function getRestRates($service, $data, $token) {
 
-        $headers = array('Authorization: Bearer  ' . $token);
+        $headers = array('Authorization: Bearer ' . $token);
         
         $urlPrice = 'https://api.correios.com.br/preco/v1/nacional/' . $service;
         $resultPrice = $this->requestUrl($urlPrice, $data, 'GET', $headers);
