@@ -282,7 +282,7 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         $result = $this->requestUrl($url, $data, 'POST', $headers);
         $json = json_decode($result);
 
-        if ($jsonPrice->msg) {
+        if ($json->msg) {
             return null;
         } else {
             return $json->token;
@@ -402,6 +402,14 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
         $urlPrice = 'https://api.correios.com.br/preco/v1/nacional/' . $service;
         $resultPrice = $this->requestUrl($urlPrice, $data, 'GET', $headers);
         $jsonPrice = json_decode($resultPrice);
+
+        if (!empty($jsonPrice->msgs) && !empty($jsonPrice->msgs[0])) {
+            if ($jsonPrice->msgs[0] == 'GTW-007: Token expirado.') {
+                $connection = Mage::getSingleton('core/resource')->getConnection('core_write');
+                $query = "DELETE FROM core_config_data WHERE path LIKE '%correios/token%'";
+                $connection->query($query);
+            }
+        }
 
         $urlDeadline = 'https://api.correios.com.br/prazo/v1/nacional/' . $service;
         $dataDeadline = array(
