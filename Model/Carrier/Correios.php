@@ -146,9 +146,17 @@ class Cammino_Shipping_Model_Carrier_Correios extends Mage_Shipping_Model_Carrie
                 }
 
                 $_shippingDaysExtra = floatval($this->getConfigData("shippingdaysextra"));
+                $_shippingDaysExtraServices = $this->getConfigData("shippingdaysextra_services") ? explode(",", $this->getConfigData("shippingdaysextra_services")) : [];
 
-                if ($_shippingDaysExtra > 0) {
-                    $service["days"] += $_shippingDaysExtra;    
+                if (!empty($_shippingDaysExtraServices)) {
+                    foreach ($_shippingDaysExtraServices as $code) {
+                        if ($code === $service['code'] && $_shippingDaysExtra > 0) {
+                            $service["days"] += $_shippingDaysExtra;
+                            break;
+                        }
+                    }
+                } elseif ($_shippingDaysExtra > 0) {
+                    $service["days"] += $_shippingDaysExtra;
                 }
 
                 if($calcImmediateShipment){
